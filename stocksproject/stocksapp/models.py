@@ -14,7 +14,7 @@ class Stock_ID(models.Model):
     stock_id = models.IntegerField(unique=True)
 
     def __str__(self):
-        return str(self.stock_id)
+        return str(self.stock_name)
 
 
 # Create your models here.

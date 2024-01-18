@@ -26,24 +26,23 @@ def login_view(request):
     return render(request, 'login.html')
 
 
+# @login_required(login_url='/stocksapp/login/')
 def stock_list(request):
 
     stock_list_queryset = Stock_ID.objects.all().values()
     stock_list_object = list(stock_list_queryset)
-
-    """
-    stock_list_object = [{'id': 1, 'stock_name': 'ATZ.TO', 'stock_id': 0}, {'id': 2, 'stock_name': 'ACQ.TO', 'stock_id': 1}]
-    """
+    stocks= []
+    for stock in stock_list_object:
+        stocks.append(stock['stock_name']) 
 
     # Get the search query from the request
     query = request.GET.get('search', '')
 
     # Filter stocks based on the search query
-    matching_stocks = [stock for stock in stocks if stock.lower().startswith(query.lower())]
-    # matching_stocks = [stock for stock in stocks if query.lower() in stock.lower()]
-    matching_stocks.sort()
+    matching_stock_list = [stock for stock in stocks if stock.lower().startswith(query.lower())]
+    matching_stock_list.sort()
 
-    return render(request, 'stock_search.html', {'stocks': stock_list_object, 'query': query})
+    return render(request, 'stock_list.html', {'stocks': matching_stock_list, 'query': query})
 
 
 def stock_detail(request, stock):
