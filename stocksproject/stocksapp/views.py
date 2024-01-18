@@ -3,7 +3,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-
+from .models import Stock_ID
+from django.http import JsonResponse, HttpResponse
 
 # @login_required(login_url='/admin/login/')
 def hello_world(request):
@@ -25,10 +26,14 @@ def login_view(request):
     return render(request, 'login.html')
 
 
-def stock_search(request):
-    # Dummy list of stocks (replace this with your actual stock data)
-    stocks = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA', 'FB', 'NVDA', 'NFLX', 'PYPL', 'INTC',
-              'AQPL', 'GOWGL', 'MSFE', 'AMRN', 'TLA', 'FSB', 'NWDA', 'ANFLX', 'SPYPL', 'EINTC']
+def stock_list(request):
+
+    stock_list_queryset = Stock_ID.objects.all().values()
+    stock_list_object = list(stock_list_queryset)
+
+    """
+    stock_list_object = [{'id': 1, 'stock_name': 'ATZ.TO', 'stock_id': 0}, {'id': 2, 'stock_name': 'ACQ.TO', 'stock_id': 1}]
+    """
 
     # Get the search query from the request
     query = request.GET.get('search', '')
@@ -38,7 +43,7 @@ def stock_search(request):
     # matching_stocks = [stock for stock in stocks if query.lower() in stock.lower()]
     matching_stocks.sort()
 
-    return render(request, 'stock_search.html', {'stocks': matching_stocks, 'query': query})
+    return render(request, 'stock_search.html', {'stocks': stock_list_object, 'query': query})
 
 
 def stock_detail(request, stock):

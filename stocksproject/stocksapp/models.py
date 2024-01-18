@@ -9,6 +9,14 @@ class CustomUser(AbstractUser):
     pass
 
 
+class Stock_ID(models.Model):
+    stock_name = models.CharField(max_length=30)
+    stock_id = models.IntegerField(unique=True)
+
+    def __str__(self):
+        return str(self.stock_id)
+
+
 # Create your models here.
 class Stock_Details_Table(models.Model):
     Stock_Details_Symbol = models.CharField(max_length=30)
@@ -16,7 +24,7 @@ class Stock_Details_Table(models.Model):
     Stock_Details_Description = models.TextField(max_length=250)
     Stock_Details_Country = models.CharField(max_length=30)
     Stock_Details_State = models.CharField(max_length=30)
-    Stock_Details_StockID = models.IntegerField()
+    Stock_Details_StockID = models.ForeignKey(Stock_ID, on_delete=models.CASCADE,to_field='stock_id')
     Stock_Details_Sector = models.CharField(max_length=30)
     Stock_Details_Industry = models.CharField(max_length=30)
     Stock_Details_Total_Revenue = models.CharField(max_length=30)
@@ -36,7 +44,7 @@ class Stock_Naics_Table(models.Model):
     Stock_Naics_Superscript = models.CharField(max_length=30)
     Stock_Naics_Class_definition = models.CharField(max_length=30)
     Stock_Naics_symbol = models.CharField(max_length=30)
-    Stock_Naics_StockID = models.IntegerField()
+    Stock_Naics_StockID = models.ForeignKey(Stock_ID, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.Stock_Naics_Level)
@@ -45,7 +53,7 @@ class Stock_Naics_Table(models.Model):
 class stock_historical_data_v3(models.Model):
     Stock_Historical_Data_V3_Column1 = models.IntegerField()
     Stock_Historical_Data_V3_Year = models.IntegerField()
-    Stock_Historical_Data_V3_StockID = models.IntegerField()
+    Stock_Historical_Data_V3_StockID = models.ForeignKey(Stock_ID, on_delete=models.CASCADE)
     Stock_Historical_Data_V3_FilingDate = models.IntegerField()
     Stock_Historical_Data_V3_FiscalQuarterEnd = models.CharField(max_length=30)
     Stock_Historical_Data_V3_FQE_10 = models.CharField(max_length=30)
