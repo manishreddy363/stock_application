@@ -1,4 +1,3 @@
-<!-- templates/stock_search.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -54,6 +53,7 @@
     </style>
 </head>
 <body>
+    <a style="margin-left: 90%;" href="{% url 'logout' %}">Logout</a>
     <h1 style="font-size: 40px;">Equity-Insider</h1>
     <h3 style="margin-top: -2%; margin-left: 12%;">by Tenoris<sup>3</sup></h3>
     <p style="font-size: 18px; margin-top:3%; margin-bottom:-1%;"><b>Stock Symbol Selection</b></p>
@@ -73,9 +73,13 @@
 
     <!-- List of Stocks with Horizontal Scroll -->
     <div class="stocks-container">
-        {% for stock in stocks %}
-            <a href="{% url 'stock_analysis' stock=stock %}" class="stock">{{ stock }}</a>
-        {% endfor %}
+        {% if stocks %}
+            {% for stock in stocks %}
+                <a href="{% url 'stock_analysis' stock=stock %}" class="stock">{{ stock }}</a>
+            {% endfor %}
+        {% else %}
+            <p><b>No such stock that starts with "{{ query }}"</b></p>
+        {% endif %}
     </div>
 
     <!-- JavaScript to clear the search box -->

@@ -1,5 +1,3 @@
-# stocksapp/admin.py
-# from import_export.admin import ImportExportModelAdmin
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser

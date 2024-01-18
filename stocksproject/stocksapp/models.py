@@ -1,4 +1,3 @@
-# stocksapp/models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 # Create your models here.
@@ -17,7 +16,6 @@ class Stock_ID(models.Model):
         return str(self.stock_name)
 
 
-# Create your models here.
 class Stock_Details_Table(models.Model):
     Stock_Details_Symbol = models.CharField(max_length=30)
     Stock_Details_Name = models.CharField(max_length=30)

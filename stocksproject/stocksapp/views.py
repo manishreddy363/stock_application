@@ -1,32 +1,9 @@
-# stocksapp/views.py
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
 from .models import Stock_ID
-from django.http import JsonResponse, HttpResponse
-
-# @login_required(login_url='/admin/login/')
-def hello_world(request):
-    return render(request, 'hello_world.html', {'user': request.user})
 
 
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)
-            return redirect('stock_list')  # Replace 'home' with the name of your home view
-        else:
-            messages.error(request, 'Invalid username or password.')
-
-    return render(request, 'login.html')
-
-
-# @login_required(login_url='/stocksapp/login/')
+@login_required(login_url='/')
 def stock_list(request):
 
     stock_list_queryset = Stock_ID.objects.all().values()
