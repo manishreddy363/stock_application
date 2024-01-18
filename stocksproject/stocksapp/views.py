@@ -19,7 +19,7 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            return redirect('hello_world')  # Replace 'home' with the name of your home view
+            return redirect('stock_list')  # Replace 'home' with the name of your home view
         else:
             messages.error(request, 'Invalid username or password.')
 
@@ -45,11 +45,11 @@ def stock_list(request):
     return render(request, 'stock_list.html', {'stocks': matching_stock_list, 'query': query})
 
 
-def stock_detail(request, stock):
+def stock_analysis(request, stock):
     # Retrieve stock details based on the stock symbol
     # (You need to implement this view)
     # For example, you might query a database for the details of the selected stock.
     # stock_details = get_stock_details(stock)
     
     # Render the stock detail page with the details
-    return render(request, 'stock_detail.html', {'stock': stock})
+    return render(request, 'stock_detail_analysis.html', {'stock': stock})

@@ -74,7 +74,7 @@
     <!-- List of Stocks with Horizontal Scroll -->
     <div class="stocks-container">
         {% for stock in stocks %}
-            <a href="{% url 'stock_detail' stock=stock %}" class="stock">{{ stock }}</a>
+            <a href="{% url 'stock_analysis' stock=stock %}" class="stock">{{ stock }}</a>
         {% endfor %}
     </div>
 
