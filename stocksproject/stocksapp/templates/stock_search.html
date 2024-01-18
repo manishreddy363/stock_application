@@ -1,0 +1,88 @@
+<!-- templates/stock_search.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equity-Insider</title>
+    <style>
+        /* Add your styling for colored rectangles here */
+        body {
+            background-color:#C8BFE7;
+            text-align: center;
+        }
+        .stock {
+            display: inline-block;
+            width: 98.5px;
+            height: 40px;
+            margin: 2px;
+            background-color: red;
+            text-align: center;
+            line-height: 40px;
+        }
+        .stocks-container {
+            margin: 100px;
+            overflow-x: auto; 
+            white-space: nowrap; 
+            margin-top:5px;
+        }
+
+        /* Container for search box and clear button */
+        .search-container {
+            position: relative;
+            width: 80%;
+            margin-top: 2%;
+        }
+
+        /* Search box styling */
+        input[type="text"] {
+            width: calc(100% - 200px);
+            padding: 8px;
+            margin-left: 220px;
+            box-sizing: border-box;
+        }
+
+        /* Clear button styling */
+        .clear-button {
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="font-size: 40px;">Equity-Insider</h1>
+    <h3 style="margin-top: -2%; margin-left: 12%;">by Tenoris<sup>3</sup></h3>
+    <p style="font-size: 18px; margin-top:3%; margin-bottom:-1%;"><b>Stock Symbol Selection</b></p>
+    <p>Search for a stock symbol in the search bar:</p>
+
+    <!-- Search Form -->
+    <form method="get" action="{% url 'stock_search' %}">
+        <div class="search-container">
+            <input type="text" name="search" id="search" value="{{ query }}" placeholder="Search for a stock symbol and click on Search button">
+            {% if query %}
+                <span class="clear-button" onclick="clearSearch()">X</span>
+            {% endif %}
+        {% comment %} <button type="submit" style="width: 100px; height: 30px;"><p style= "font-size: 20px;"> Search </p></button> {% endcomment %}
+    </div>
+        <button style="margin-top:5px;" type="submit">Search</button>
+    </form>
+
+    <!-- List of Stocks with Horizontal Scroll -->
+    <div class="stocks-container">
+        {% for stock in stocks %}
+            <a href="{% url 'stock_detail' stock=stock %}" class="stock">{{ stock }}</a>
+        {% endfor %}
+    </div>
+
+    <!-- JavaScript to clear the search box -->
+    <script>
+        function clearSearch() {
+            document.getElementById('search').value = '';
+        }
+    </script>
+</body>
+</html>
