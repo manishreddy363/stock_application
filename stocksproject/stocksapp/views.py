@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from .models import Stock_ID, Stock_Details_Table
+from .models import Stock_ID, Stock_Details_Table,Stock_Naics_Table,stock_historical_data_v3,stock_Earnings,Next_filing_dates
 from django.http import JsonResponse, HttpResponse
 
 # @login_required(login_url='/admin/login/')
@@ -61,27 +61,65 @@ def stock_analysis(request, stock):
         stock_revenue_dict['Country'] = stock_data.Stock_Details_Country
         stock_revenue_dict['Province'] = stock_data.Stock_Details_State
         stock_revenue_dict['Revenue(TTM)'] = stock_data.Stock_Details_Total_Revenue
-
         stock_analysis_data["stock_revenue"] = stock_revenue_dict
+
+        #NAICS code
+        stock_naics_data = Stock_Naics_Table.objects.filter(Stock_Naics_StockID=stock_id).values()
+        stock_naics_list = []
+        for item in stock_naics_data:
+            item_dict = {'code': item['Stock_Naics_Code'], 'level': item['Stock_Naics_Level'],
+                         'class_title': item['Stock_Naics_Class_title']}
+            stock_naics_list.append(item_dict)
+        stock_analysis_data['naics_code'] = stock_naics_list
+
+        #stock price & impact (table & chart)
+        stock_historical_data = stock_historical_data_v3.objects.filter(Stock_Historical_Data_V3_StockID
+                                                                   =stock_id).values()
+        stock_historical_list = []
+        for item in stock_historical_data:
+            item_historical_dict = {'filing_date':item['Stock_Historical_Data_V3_FilingDate'],
+                                    'fiscal_quarter_end':item['Stock_Historical_Data_V3_FiscalQuarterEnd'],
+                                    'stock_price':item['Stock_Historical_Data_V3_FQE_10'],
+                                    'next_day_stock_price':item['Stock_Historical_Data_V3_Price_Next_Day'],
+                                    'impact':item['Stock_Historical_Data_V3_Impact']}
+            stock_historical_list.append(item_historical_dict)
+
+        stock_analysis_data['fiscal_data'] = stock_historical_list
+
+        #EPS table
+
+        stock_earnings_data = stock_Earnings.objects.filter(Stock_Earnings_StockID
+                                                            =stock_id).values()
+        stock_earnings_list = []
+        for item in stock_earnings_data:
+            stock_earnings_dict = {'filing_date':item['Stock_Earnings_Date'],
+                                   'fiscal_quarter_end':item['Stock_Earnings_End_of_Quarter'],
+                                   'forecasted_eps':'',
+                                   'ei_eps':item['Stock_Earnings_Estimated_EPS'],
+                                   'actual_eps':item['Stock_Earnings_Actual_EPS'],
+                                   'f_delta':'',
+                                   'ei_delta':''}
+            stock_earnings_list.append(stock_earnings_dict)
+
+        stock_analysis_data['eps_data'] = stock_earnings_list
+
+        #next period
+        next_filing_data = Next_filing_dates.objects.filter(Next_Filing_Dates_StockID
+                                                                   =stock_id).values()
+        next_filing_list = []
+        for item in next_filing_data:
+            next_filing_dict = {'next_filing_date':item['Next_Filing_Dates_Next_FD'],
+                                'fiscal_quarter_end':item['Next_Filing_Dates_FiscalQuarterEnd'],
+                                'forecasted_eps':'',
+                                'ei_eps':'',
+                                'actual_eps':''}
+            next_filing_list.append(next_filing_dict)
+
+        stock_analysis_data['next_period'] = next_filing_list
+
+        # Trading days remaining before next filing date
+        stock_analysis_data["filing_date"] = 230
     except:
         print("invalid stock id")
         messages.error(request, 'Invalid {} stock name'.formate(stock))
-
-    #NAICS code
-    stock_analysis_data['naics_code'] = [{'code':'',"level":"","class_title":""}]
-
-    #stock price & impact (table & chart)
-    stock_analysis_data['fiscal_data'] = [{'filing_date':'','fiscal_quarter_end':'','stock_price':'','next_day_stock_price':'','impact':''}]
-
-    #EPS table
-    stock_analysis_data['eps_data'] = [{'filing_date':'','fiscal_quarter_end':'','forecasted_eps':'',
-                                        'ei_eps':'', 'actual_eps':'','f_delta':'','ei_delta':''}]
-
-    #next period
-    stock_analysis_data['next_period'] = [{'next_filing_date':'','fiscal_quarter_end':'','forecasted_eps':'',
-                                        'ei_eps':'', 'actual_eps':''}]
-
-    # Trading days remaining before next filing date
-    stock_analysis_data["filing_date"] = 230
-
     return render(request, 'stock_detail_analysis.html', {'stock_analysis_data': stock_analysis_data})
