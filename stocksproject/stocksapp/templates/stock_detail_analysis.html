@@ -2,11 +2,221 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Django App</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style></style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equity-Insider</title>
+    <style>
+        body {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: 16% 42% 42%;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .grid-cell {
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow: auto;
+        }
+
+        .nested-cell-horizontal {
+            display: grid;
+            grid-template-rows: 50% 50%;
+        }
+
+        .nested-cell-vertical {
+            display: grid;
+            grid-template-columns: 50% 50%;
+        }
+
+        .naics-code, .naics-code td, .naics-code th {
+                width: 300px; /* Increase padding for larger box size */
+                font-size: 16px; /* Increase font size for bigger text */
+        }
+
+        .title {
+            grid-column: span 2; /* Span the entire width */
+            grid-row: span 1; /* Occupy the first row */
+            text-align: center; /* Center the title text */
+            font-size: 16px; /* Adjust the font size as needed */
+            padding: 0px; /* Add padding for better visibility */
+            margin-top: -1%;
+        }
+
+        hr {
+            width: 50%; /* Set the width to 50% of the page */
+            margin: 0; /* Center the hr within its container */
+            border: none;
+            border-top: 2px solid black; /* Adjust the border properties as needed */
+            margin-top: 1%;
+        }
+
+        /* Style for the search bar */
+        .search-bar {
+            width: 300px; /* Set the width of the search bar */
+            margin: 10px; /* Add some margin for spacing */
+            margin-top: -1%;
+        }
+
+        /* Style for the search input */
+        .search-input {
+            width: 100%;
+            padding: 1px;
+            font-size: 10px;
+        }
+          
+    </style>
 </head>
 <body>
-    <p>{{ stock_analysis_data }} stock detail page</p>
+    <!-- Title (Top 10%) -->
+        <div class="grid-cell title">
+            <h1>Equity-Insider</h1>
+            <h4 style="margin-top: -2%; margin-left: 12%;">by Tenoris<sup>3</sup></h4>
+            <p style="margin-left:-91%; margin-top: -6%"><b>Stock Analysis</b></p>
+            <div class="search-bar">
+                <input readonly type="text" class="search-input" placeholder="{{ stock_analysis_data.stock_id_name }}">
+              </div>
+            <h3 style="margin-bottom: -1%; text-align: center; transform: translateX(-25%);">{{stock_analysis_data.stock_name}}</h3>
+            <hr>
+        </div>
+    <!-- First Part (Top Left) -->
+    <div class="grid-cell nested-cell-vertical">
+        <!-- First nested cell (Top Left) -->
+        <div class="nested-cell-vertical">
+            <div style="width:200%;">
+                <h3>Description</h3>
+                <p style="font-size: 14px;">{{ stock_analysis_data.description }}</p>
+                <table border="1">
+                    <caption><b>Revenue by Geography</b></caption>
+                    <thead>
+                        <tr>
+                            <th>Country</th>
+                            <th>Province</th>
+                            <th>Revenue(TTM)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ stock_revenue.Country }}</td>
+                            <td>{{ stock_revenue.Province }}</td>
+                            <td>{{ stock_revenue.Revenue_TTM }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Second nested cell (Bottom Left) -->
+        <div class="nested-cell-vertical">
+            <div>
+                <table class="naics-code" border="1">
+                    <caption><b>NAICS Code:</b></caption>
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Level</th>
+                            <th>Class title</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock in stock_naics_code %}
+                            <tr>
+                                {% for key,value in stock.items %}
+                                    <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Second Part (Top Right) -->
+    <div class="grid-cell">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Filing Date</th>
+                    <th>Fiscal Quarter End</th>
+                    <th>Forecated EPS</th>
+                    <th>EI EPS</th>
+                    <th>Actual EPS</th>
+                    <th>F-Delta</th>
+                    <th>EI-Delta</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in eps_data %}
+                    <tr>
+                        {% for key,value in data.items %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Third Part (Bottom Left) -->
+    <div class="grid-cell">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Filing Date</th>
+                    <th>Fiscal Quarter End</th>
+                    <th>Stock Price (10 Days After Fiscal Quarter End)</th>
+                    <th>Stock Price (Next Day)</th>
+                    <th>Impact</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in fiscal_data %}
+                    <tr>
+                        {% for key,value in data.items %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Fourth Part (Bottom Right) -->
+    <div class="grid-cell nested-cell-horizontal">
+        <!-- Third nested cell (Top Right) -->
+        <div class="nested-cell-horizontal">
+            <div>
+                <table border="1">
+                    <caption><b>Next Period</b></caption>
+                    <thead>
+                        <tr>
+                            <th>Next Filing Date</th>
+                            <th>Fiscal Quarter End</th>
+                            <th>Forecasted EPS</th>
+                            <th>EI EPS</th>
+                            <th>Actual EPS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in next_period_data %}
+                            <tr>
+                                {% for key,value in data.items %}
+                                    <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Fourth nested cell (Bottom Right) -->
+        <div class="nested-cell-horizontal">
+            <u><h2>Trading Days Remaining Before Next Filing Date</h2></u>
+            <h2 style="text-align:center"> {{ stock_analysis_data.filing_date }} </h2>
+        </div>
+    </div>
+
 </body>
 </html>

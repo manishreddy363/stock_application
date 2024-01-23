@@ -30,6 +30,7 @@ def stock_list(request):
     return render(request, 'stock_list.html', {'stocks': matching_stock_list, 'query': query})
 
 
+@login_required(login_url='/')
 def stock_analysis(request, stock):
     # Retrieve stock details based on the stock symbol
     # (You need to implement this view)
@@ -60,7 +61,7 @@ def stock_analysis(request, stock):
         stock_revenue_dict = {}
         stock_revenue_dict['Country'] = stock_data.Stock_Details_Country
         stock_revenue_dict['Province'] = stock_data.Stock_Details_State
-        stock_revenue_dict['Revenue(TTM)'] = stock_data.Stock_Details_Total_Revenue
+        stock_revenue_dict['Revenue_TTM'] = stock_data.Stock_Details_Total_Revenue
         stock_analysis_data["stock_revenue"] = stock_revenue_dict
 
         #NAICS code
@@ -121,5 +122,10 @@ def stock_analysis(request, stock):
         stock_analysis_data["filing_date"] = 230
     except:
         print("invalid stock id")
-        messages.error(request, 'Invalid {} stock name'.formate(stock))
-    return render(request, 'stock_detail_analysis.html', {'stock_analysis_data': stock_analysis_data})
+        messages.error(request, 'Invalid {} stock name'.format(stock))
+    return render(request, 'stock_detail_analysis.html', {'stock_analysis_data': stock_analysis_data,
+                                                          'eps_data': stock_earnings_list,
+                                                          'stock_revenue': stock_revenue_dict,
+                                                          'stock_naics_code': stock_analysis_data['naics_code'],
+                                                          'fiscal_data': stock_historical_list,
+                                                          'next_period_data':next_filing_list})
