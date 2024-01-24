@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from .models import Stock_ID, Stock_Details_Table,Stock_Naics_Table,stock_historical_data_v3,stock_Earnings,Next_filing_dates
+from .models import Stock_ID, Stock_Details_Table,Stock_Naics_Table,stock_historical_data_v3,Next_filing_dates
+from .models import stock_Earnings_4 as stock_Earnings
 from django.http import JsonResponse, HttpResponse
 
 # @login_required(login_url='/admin/login/')
@@ -89,17 +90,17 @@ def stock_analysis(request, stock):
 
         #EPS table
 
-        stock_earnings_data = stock_Earnings.objects.filter(Stock_Earnings_StockID
+        stock_earnings_data = stock_Earnings.objects.filter(Stock_Earnings_4_StockID
                                                             =stock_id).values()
         stock_earnings_list = []
         for item in stock_earnings_data:
-            stock_earnings_dict = {'filing_date':item['Stock_Earnings_Date'],
-                                   'fiscal_quarter_end':item['Stock_Earnings_End_of_Quarter'],
-                                   'forecasted_eps':'',
-                                   'ei_eps':item['Stock_Earnings_Estimated_EPS'],
-                                   'actual_eps':item['Stock_Earnings_Actual_EPS'],
-                                   'f_delta':'',
-                                   'ei_delta':''}
+            stock_earnings_dict = {'filing_date':item['Stock_Earnings_4_Filing_Date_2'],
+                                   'fiscal_quarter_end':item['Stock_Earnings_4_Fiscal_Quarter_End_2'],
+                                   'forecasted_eps':item['Stock_Earnings_4_Estimated_EPS'],
+                                   'ei_eps':item['Stock_Earnings_4_EI_EPS_2'],
+                                   'actual_eps':item['Stock_Earnings_4_Actual_EPS'],
+                                   'f_delta':item['Stock_Earnings_4_F_Delta_2'],
+                                   'ei_delta':item['Stock_Earnings_4_EI_Delta_2']}
             stock_earnings_list.append(stock_earnings_dict)
 
         stock_analysis_data['eps_data'] = stock_earnings_list
@@ -108,24 +109,26 @@ def stock_analysis(request, stock):
         next_filing_data = Next_filing_dates.objects.filter(Next_Filing_Dates_StockID
                                                                    =stock_id).values()
         next_filing_list = []
+        remaining_days = 0
         for item in next_filing_data:
             next_filing_dict = {'next_filing_date':item['Next_Filing_Dates_Next_FD'],
                                 'fiscal_quarter_end':item['Next_Filing_Dates_FiscalQuarterEnd'],
-                                'forecasted_eps':'',
-                                'ei_eps':'',
-                                'actual_eps':''}
+                                'forecasted_eps':item['Next_Filing_Dates_Avg_FEPS'],
+                                'ei_eps':item['Next_Filing_Dates_Avg_EEPS'],
+                                'actual_eps':item['Next_Filing_Dates_Next_Actual_EPS']}
+            remaining_days +=int(item['Next_Filing_Dates_Remaining_Days'])
             next_filing_list.append(next_filing_dict)
 
         stock_analysis_data['next_period'] = next_filing_list
 
         # Trading days remaining before next filing date
-        stock_analysis_data["filing_date"] = 230
+        stock_analysis_data["filing_date"] = remaining_days
+        return render(request, 'stock_detail_analysis.html', {'stock_analysis_data': stock_analysis_data,
+                                                              'eps_data': stock_earnings_list,
+                                                              'stock_revenue': stock_revenue_dict,
+                                                              'stock_naics_code': stock_analysis_data['naics_code'],
+                                                              'fiscal_data': stock_historical_list,
+                                                              'next_period_data':next_filing_list})
     except:
         print("invalid stock id")
         messages.error(request, 'Invalid {} stock name'.format(stock))
-    return render(request, 'stock_detail_analysis.html', {'stock_analysis_data': stock_analysis_data,
-                                                          'eps_data': stock_earnings_list,
-                                                          'stock_revenue': stock_revenue_dict,
-                                                          'stock_naics_code': stock_analysis_data['naics_code'],
-                                                          'fiscal_data': stock_historical_list,
-                                                          'next_period_data':next_filing_list})

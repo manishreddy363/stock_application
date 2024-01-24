@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'stocksapp',
+    'import_export',
 ]
 
 MIDDLEWARE = [
@@ -77,7 +78,7 @@ AUTH_USER_MODEL = 'stocksapp.CustomUser'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'stockdatabase',
+        'NAME': 'stockdatabase_updated',
         'USER': 'stockuser',
         'PASSWORD': 'P@ssword1',
         'HOST': '35.239.127.143',
