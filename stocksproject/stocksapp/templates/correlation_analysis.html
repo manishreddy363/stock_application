@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            {% comment %} font-family: Arial, sans-serif; {% endcomment %}
+            background-color:#C8BFE7;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #top {
+            flex: 1;
+            max-height: 12%;
+            overflow: auto;
+            border: 1px solid black; /* Add black border */
+            {% comment %} padding: 2px; {% endcomment %}
+        }
+
+        #center {
+            display: flex;
+            flex: 1.8;
+            max-height: 48%;
+            display: flex;
+            overflow: auto; /* Enable vertical scrolling */
+            justify-content: space-between;
+            border: 1px solid black; /* Add black border */
+        }
+
+        #center-left {
+            flex: 0.45;
+            height: 100%;
+            border: 1px solid black; /* Add black border */
+        }
+
+        #center-right {
+            flex: 0.55;
+            height: 100%;
+            border: 1px solid black; /* Add black border */
+        }
+
+        #bottom {
+            flex: 1;
+            display: flex;
+            max-height: 40%;
+            {% comment %} justify-content: space-between;
+            align-items: center;{% endcomment %}
+            overflow: auto; /* Enable vertical scrolling */ 
+            border: 1px solid black; /* Add black border */
+        }
+        
+        
+        #bottom-left, #bottom-center, #bottom-right {
+            flex: 1;
+            height: 100%;
+            border: 1px solid black; /* Add black border */
+        }
+
+        #bottom-center {
+            flex: 0.3;
+            border: 1px solid black; /* Add black border */
+        }
+
+    </style>
+    <title>Your Django App</title>
+</head>
+<body>
+
+<div id="container">
+
+    <div id="top"">
+        <!-- Content for the top 10% -->
+        <p style="margin-top: 0%;"><b>Correlation Analysis</b></p>
+        <h1 style="text-align:center; margin-top: -3.0%;">Equity-Insider</h1>
+        <p style="margin-top: -2%; margin-left: 12%; text-align:center;"><b>by Tenoris<sup>3</sup></b></p>
+        {% comment %} <div class="search-bar">
+            <form method="post" action="{% url 'stock_analysis' stock=stock_input %}">
+                {% csrf_token %}
+                {{ form.stock_input }}
+                <button type="submit" class="submit-button">Submit</button>
+            </form>
+            <span style="color: red;">{% if error_message %}{{ error_message }}{% endif %}</span>
+        </div> {% endcomment %}
+        <h5 style="margin-top: -2.75%;">Search</h5>
+    </div>
+
+    <div id="center"">
+
+        <div id="center-left">
+            <!-- Content for the center-left 45% -->
+            <p>Center Left Content</p>
+            <div>
+                <h1>Equity-Insider</h1>
+                <h1>Equity-Insider</h1>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+            </div>
+        </div>
+
+        <div id="center-right"">
+            <!-- Content for the center-right 55% -->
+            <p>Center Right Content</p>
+            <div>
+                <h1>Equity-Insider</h1>
+                <h1>Equity-Insider</h1>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="bottom">
+
+        <div id="bottom-left">
+            <!-- Content for the bottom-left 20% -->
+            <p>Bottom Left Content</p>
+            <div>
+                <h1>Equity-Insider</h1>
+                <h1>Equity-Insider</h1>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+            </div>
+        </div>
+
+        <div id="bottom-center">
+            <!-- Content for the bottom-center 30% -->
+            <p>Bottom Center Content</p>
+            <div>
+                <h1>Equity-Insider</h1>
+                <h1>Equity-Insider</h1>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+            </div>
+        </div>
+
+        <div id="bottom-right">
+            <!-- Content for the bottom-right 50% -->
+            <p>Bottom Right Content</p>
+            <div>
+                <h1>Equity-Insider</h1>
+                <h1>Equity-Insider</h1>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+                <p>Top Content</p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
