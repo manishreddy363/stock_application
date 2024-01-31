@@ -31,10 +31,15 @@
             grid-template-columns: 50% 50%;
         }
 
-        .naics-code, .naics-code td, .naics-code th {
-                width: 300px; /* Increase padding for larger box size */
-                font-size: 16px; /* Increase font size for bigger text */
+        .naics-code {
+            width: 300px; /* Increase padding for larger box size */
+            font-size: 14px; /* Increase font size for bigger text */
         }
+
+        .naics-code td, .naics-code th {
+            width: 300px; /* Increase padding for larger box size */
+            font-size: 12px; /* Increase font size for bigger text */
+    }
 
         .title {
             grid-column: span 2; /* Span the entire width */
@@ -53,6 +58,13 @@
             margin-top: 1%;
         }
 
+        #toggleButton {
+            margin-left: 92%;
+            margin-top: -5%;
+            padding: 0px;
+            width: 50px;
+        }
+
         /* Style for the search bar */
         .search-bar {
             display: flex;
@@ -60,6 +72,26 @@
             margin-top: -1%;
             margin-bottom: -0.1%;
             margin-left: 0.5%;
+        }
+
+        table {
+            margin: 0;
+            padding: 0;
+            font-size: 12px;
+            width: 100%;
+            border: 1px solid #000000; /* Border width and color */;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #000000; /* Border width and color for cells */
+            {% comment %} padding: 8px; /* Add padding for better appearance */ {% endcomment %}
+        }
+
+        tbody {
+            font-size: 12px;
+            border: 1px solid #000000; /* Border width and color for cells */
+
         }
     
     </style>
@@ -85,10 +117,10 @@
     <div class="grid-cell nested-cell-vertical">
         <!-- First nested cell (Top Left) -->
         <div class="nested-cell-vertical">
-            <div style="width:200%;">
-                <h3>Description</h3>
-                <p style="font-size: 14px;">{{ stock_analysis_data.description }}</p>
-                <table border="1">
+            <div style="width:190%;">
+                <h4 style="margin-top:0; margin-bottom:10px">Description</h4>
+                <p style="font-size: 12px; text-align: justify">{{ stock_analysis_data.description }}</p>
+                <table>
                     <caption><b>Revenue by Geography</b></caption>
                     <thead>
                         <tr>
@@ -111,7 +143,7 @@
         <!-- Second nested cell (Bottom Left) -->
         <div class="nested-cell-vertical">
             <div>
-                <table class="naics-code" border="1">
+                <table class="naics-code">
                     <caption><b>NAICS Code:</b></caption>
                     <thead>
                         <tr>
@@ -136,34 +168,42 @@
     
     <!-- Second Part (Top Right) -->
     <div class="grid-cell" id="part2">
-        <button onclick="changeContent()">Chart</button>
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>Filing Date</th>
-                    <th>Fiscal Quarter End</th>
-                    <th>Forecated EPS</th>
-                    <th>EI EPS</th>
-                    <th>Actual EPS</th>
-                    <th>F-Delta</th>
-                    <th>EI-Delta</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for data in eps_data %}
-                    <tr>
-                        {% for key,value in data.items %}
-                            <td>{{ value }}</td>
+        <button id="toggleButton" onclick="changeContent()">Chart</button>
+        <div id="contentContainer">
+            <div id="tableContent">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Filing Date</th>
+                            <th>Fiscal Quarter End</th>
+                            <th>Forecated EPS</th>
+                            <th>EI EPS</th>
+                            <th>Actual EPS</th>
+                            <th>F-Delta</th>
+                            <th>EI-Delta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in eps_data %}
+                            <tr>
+                                {% for key,value in data.items %}
+                                    <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
                         {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    </tbody>
+                </table>
+            </div>
+            <div id="chartContent" style="display:none;">
+                {% comment %} <img id="chartImage" src="data:image/png;base64,{{ chart_url }}" alt="Chart"> {% endcomment %}
+                <img id="chartImage" src="data:image/png;base64,{{ chart_url }}" alt="Chart" style="width: auto; height: auto;">
+            </div>
+        </div>
     </div>
 
     <!-- Third Part (Bottom Left) -->
     <div class="grid-cell">
-        <table border="1">
+        <table>
             <thead>
                 <tr>
                     <th>Filing Date</th>
@@ -190,7 +230,7 @@
         <!-- Third nested cell (Top Right) -->
         <div class="nested-cell-horizontal">
             <div>
-                <table border="1">
+                <table>
                     <caption><b>Next Period</b></caption>
                     <thead>
                         <tr>
@@ -216,28 +256,32 @@
 
         <!-- Fourth nested cell (Bottom Right) -->
         <div class="nested-cell-horizontal">
-            <u><h2>Trading Days Remaining Before Next Filing Date</h2></u>
-            <h2 style="text-align:center"> {{ stock_analysis_data.filing_date }} </h2>
-            <a href="{% url 'correlation_analysis' stock_id=stock_analysis_data.stock_id %}">Correlation Analysis</a>
+            <u style="margin-top:-5%;"><h2>Trading Days Remaining Before Next Filing Date</h2></u>
+            <h2 style="text-align:center; margin-top:-5%;"> {{ stock_analysis_data.filing_date }} </h2>
+            <a style="margin-top:-5%; margin-left:78%;" href="{% url 'correlation_analysis' stock_id=stock_analysis_data.stock_id %}">Correlation Analysis</a>
         </div>
     </div>
 
     <script>
         function changeContent() {
-            $.ajax({
-                url: '{% url "stock_chart" stock=stock_analysis_data.stock_id_name %}',
-                method: 'GET',
-                dataType: 'html',
-                success: function(response) {
-                    $('#part2').html(response);
-                },
-                error: function(error) {
-                    console.error('Error fetching new content:', error);
-                }
-            });
+            var tableContent = $('#tableContent');
+            var chartContent = $('#chartContent');
+            var toggleButton = $('#toggleButton');
+        
+            if (tableContent.is(':visible')) {
+                // Table is visible, switch to chart
+                tableContent.hide();
+                chartContent.show();
+                toggleButton.text('Table');
+            } else {
+                // Chart is visible, switch to table
+                chartContent.hide();
+                tableContent.show();
+                toggleButton.text('Chart');
+            }
+            return false; // Prevents the default link behavior
         }
     </script>
     
-
 </body>
 </html>

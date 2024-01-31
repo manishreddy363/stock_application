@@ -145,7 +145,53 @@ def stock_analysis(request, stock):
         else:
             form = StockForm(initial={'stock_input': default_stock_value})
 
-        # return render(request, 'stock_detail_analysis.html', {'form': form, 'error_message': error_message})
+        selected_y_axis = ['forecasted_eps', 'ei_eps', 'actual_eps', 'f_delta', 'ei_delta']
+
+        # Set the Matplotlib backend explicitly
+        plt.switch_backend('Agg')
+
+        # Generate chart if the form is submitted
+        df = pd.DataFrame(stock_earnings_list)
+        x_column = 'filing_date'
+        # Adjust the size of the entire graph
+        fig, ax = plt.subplots(figsize=(7, 3))
+        # fig, ax = plt.subplots()
+        # Display x-axis values vertically
+        ax.set_facecolor('lightgray')
+        fig.patch.set_facecolor('lightgray')
+        ax.set_xticklabels(df[x_column], rotation=90, ha='center', fontsize=6)
+        ax.tick_params(axis='y', labelsize=6)
+        bar_width = 0.2
+        unique_dates = df[x_column].unique()
+        x_positions = range(len(unique_dates))
+        colors = ['blue', 'green', 'red', 'purple', 'orange']
+        for i, (y_column, color) in enumerate(zip(selected_y_axis, colors)):
+            if i < 3:
+                ax.bar([pos + i * bar_width for pos in x_positions], df[y_column], label=y_column, alpha=0.7, width=bar_width, color=color)
+            else:
+                ax.plot(df[x_column], df[y_column], label=y_column, color=color)
+
+        # ax.set_xlabel('X Axis')
+        # ax.set_ylabel('Y Axis')
+        # Set the y-axis step to be +1 or -1
+        ax.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
+        # Legends displayed horizontally with small circle notation
+        legend_labels = ['forecasted_eps', 'ei_eps', 'actual_eps', 'f_delta', 'ei_delta']
+        legend = ax.legend(loc='lower right', bbox_to_anchor=(1, 1), ncol=len(legend_labels), fancybox=True, fontsize='small', labels=legend_labels)
+        # legend.get_frame().set_linewidth(0)
+        # Adjust the size of the legend
+        # legend.set_fontsize(10)
+        legend.set_bbox_to_anchor((0.81, 1))
+
+        # Adjust the spacing around the subplots to make the table occupy all available space
+        plt.subplots_adjust(right=1, left=0.05, top=0.9, bottom=0.18)
+
+        img = BytesIO()
+        canvas = FigureCanvas(fig)
+        canvas.print_png(img)
+        img.seek(0)
+        chart_url = base64.b64encode(img.getvalue()).decode()
+        plt.close(fig)
 
         return render(request, 'stock_detail_analysis.html', {'stock_analysis_data': stock_analysis_data,
                                                               'eps_data': stock_earnings_list,
@@ -154,7 +200,7 @@ def stock_analysis(request, stock):
                                                               'fiscal_data': stock_historical_list,
                                                               'next_period_data':next_filing_list,
                                                               'form': form, 'error_message': error_message,
-                                                              'stock_input':stock})
+                                                              'stock_input':stock, 'chart_url': chart_url})
     except Exception as e:
         print("invalid stock id")
         print(f"Exception: {e}")
@@ -174,12 +220,6 @@ def stock_chart(request, stock):
                                 'actual_eps':item['Stock_Earnings_4_Actual_EPS'],
                                 'f_delta':item['Stock_Earnings_4_F_Delta_2'],
                                 'ei_delta':item['Stock_Earnings_4_EI_Delta_2']}
-        # stock_earnings_dict2 = {'filing_date':'3-Mar-23',
-        #                         'forecasted_eps':0.3,
-        #                         'ei_eps':0.4,
-        #                         'actual_eps':0.5,
-        #                         'f_delta':0.6,
-        #                         'ei_delta':0.3}
     data.append(stock_earnings_dict1)
     # data.append(stock_earnings_dict2)
     # form = YAxisSelectionForm(request.POST or None)
@@ -215,7 +255,6 @@ def stock_chart(request, stock):
 
     return render(request, 'chart_content.html', {'chart_url': chart_url, 'stock': stock})
 
-    # return render(request, 'table.html', {'data': data, 'form': form, 'stock': stock})
 
 
 @login_required(login_url='/')
