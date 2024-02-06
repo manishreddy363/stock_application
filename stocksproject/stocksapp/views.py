@@ -10,7 +10,10 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
-
+# import random
+from matplotlib.ticker import FuncFormatter
+from django.http import JsonResponse
+import matplotlib
 
 @login_required(login_url='/')
 def stock_list(request):
@@ -85,6 +88,7 @@ def stock_analysis(request, stock):
                                     'stock_price':item['Stock_Historical_Data_V3_FQE_10'],
                                     'next_day_stock_price':item['Stock_Historical_Data_V3_Price_Next_Day'],
                                     'impact':item['Stock_Historical_Data_V3_Impact']}
+            # 'stock_price':random.randint(1,5),
             stock_historical_list.append(item_historical_dict)
 
         stock_analysis_data['fiscal_data'] = stock_historical_list
@@ -145,53 +149,23 @@ def stock_analysis(request, stock):
         else:
             form = StockForm(initial={'stock_input': default_stock_value})
 
-        selected_y_axis = ['forecasted_eps', 'ei_eps', 'actual_eps', 'f_delta', 'ei_delta']
+        
+        data1 = stock_earnings_list
+        x_axis_1 = list(stock_earnings_dict.keys())[:2]
+        y_axis_1 = list(stock_earnings_dict.keys())[2:]
+        colors1 = ['blue', 'green', 'red', 'purple', 'orange']
+        legend_position1 = (0.81, 1)
+        bars1 = 3
 
-        # Set the Matplotlib backend explicitly
-        plt.switch_backend('Agg')
+        data2 = stock_historical_list
+        x_axis_2 = list(item_historical_dict.keys())[:2]
+        y_axis_2 = list(item_historical_dict.keys())[2:]
+        colors2 = ['blue', 'green', 'red']
+        legend_position2 = (0.58, 1)
+        bars2 = 2
 
-        # Generate chart if the form is submitted
-        df = pd.DataFrame(stock_earnings_list)
-        x_column = 'filing_date'
-        # Adjust the size of the entire graph
-        fig, ax = plt.subplots(figsize=(7, 3))
-        # fig, ax = plt.subplots()
-        # Display x-axis values vertically
-        ax.set_facecolor('lightgray')
-        fig.patch.set_facecolor('lightgray')
-        ax.set_xticklabels(df[x_column], rotation=90, ha='center', fontsize=6)
-        ax.tick_params(axis='y', labelsize=6)
-        bar_width = 0.2
-        unique_dates = df[x_column].unique()
-        x_positions = range(len(unique_dates))
-        colors = ['blue', 'green', 'red', 'purple', 'orange']
-        for i, (y_column, color) in enumerate(zip(selected_y_axis, colors)):
-            if i < 3:
-                ax.bar([pos + i * bar_width for pos in x_positions], df[y_column], label=y_column, alpha=0.7, width=bar_width, color=color)
-            else:
-                ax.plot(df[x_column], df[y_column], label=y_column, color=color)
-
-        # ax.set_xlabel('X Axis')
-        # ax.set_ylabel('Y Axis')
-        # Set the y-axis step to be +1 or -1
-        ax.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
-        # Legends displayed horizontally with small circle notation
-        legend_labels = ['forecasted_eps', 'ei_eps', 'actual_eps', 'f_delta', 'ei_delta']
-        legend = ax.legend(loc='lower right', bbox_to_anchor=(1, 1), ncol=len(legend_labels), fancybox=True, fontsize='small', labels=legend_labels)
-        # legend.get_frame().set_linewidth(0)
-        # Adjust the size of the legend
-        # legend.set_fontsize(10)
-        legend.set_bbox_to_anchor((0.81, 1))
-
-        # Adjust the spacing around the subplots to make the table occupy all available space
-        plt.subplots_adjust(right=1, left=0.05, top=0.9, bottom=0.18)
-
-        img = BytesIO()
-        canvas = FigureCanvas(fig)
-        canvas.print_png(img)
-        img.seek(0)
-        chart_url = base64.b64encode(img.getvalue()).decode()
-        plt.close(fig)
+        chart_url_1 = stock_chart(x_axis_1, y_axis_1, data1, colors1, bars1, legend_position1)
+        chart_url_2 = stock_chart(x_axis_2, y_axis_2, data2, colors2, bars2, legend_position2)
 
         return render(request, 'stock_detail_analysis.html', {'stock_analysis_data': stock_analysis_data,
                                                               'eps_data': stock_earnings_list,
@@ -200,51 +174,51 @@ def stock_analysis(request, stock):
                                                               'fiscal_data': stock_historical_list,
                                                               'next_period_data':next_filing_list,
                                                               'form': form, 'error_message': error_message,
-                                                              'stock_input':stock, 'chart_url': chart_url})
+                                                              'stock_input':stock, 'chart_url_1': chart_url_1,
+                                                              'chart_url_2': chart_url_2})
     except Exception as e:
         print("invalid stock id")
         print(f"Exception: {e}")
         messages.error(request, 'Invalid {} stock name'.format(stock))
 
 
-def stock_chart(request, stock):
-    print(stock)
-    stock_id = Stock_ID.objects.get(stock_name=stock).stock_id
-    stock_earnings_data = stock_Earnings.objects.filter(Stock_Earnings_4_StockID
-                                                            =stock_id).values()
-    data = []
-    for item in stock_earnings_data:
-        stock_earnings_dict1 = {'filing_date':item['Stock_Earnings_4_Filing_Date_2'],
-                                'forecasted_eps':item['Stock_Earnings_4_Estimated_EPS'],
-                                'ei_eps':item['Stock_Earnings_4_EI_EPS_2'],
-                                'actual_eps':item['Stock_Earnings_4_Actual_EPS'],
-                                'f_delta':item['Stock_Earnings_4_F_Delta_2'],
-                                'ei_delta':item['Stock_Earnings_4_EI_Delta_2']}
-    data.append(stock_earnings_dict1)
-    # data.append(stock_earnings_dict2)
-    # form = YAxisSelectionForm(request.POST or None)
+def stock_chart(xaxis, yaxis, data, colors, bars, legend_position, format_y_axis=False):
 
-    # if request.method == 'POST' and form.is_valid():
-    #     selected_y_axis = form.cleaned_data.get('y_axis_options', [])
-
-    #     if not selected_y_axis:
-    #         # If no y-axis options are selected, default to all columns
-    selected_y_axis = ['forecasted_eps', 'ei_eps', 'actual_eps', 'f_delta', 'ei_delta']
-
+    selected_y_axis = yaxis
     # Set the Matplotlib backend explicitly
     matplotlib.use('Agg')
 
     # Generate chart if the form is submitted
     df = pd.DataFrame(data)
-    x_column = 'filing_date'
+    x_column = xaxis[0]
+    # Adjust the size of the entire graph
+    fig, ax = plt.subplots(figsize=(7, 3))
+    ax.set_facecolor('lightgray')
+    fig.patch.set_facecolor('lightgray')
+    # Display x-axis values vertically
+    ax.set_xticklabels(df[x_column], rotation=90, ha='center', fontsize=6)
+    ax.tick_params(axis='y', labelsize=6)
+    bar_width = 0.2
+    x_positions = len(df[x_column])
+    for i, (y_column, color) in enumerate(zip(selected_y_axis, colors)):
+        if i < bars:
+            ax.bar([pos + i * bar_width for pos in range(x_positions)], df[y_column], label=y_column, alpha=0.7, width=bar_width, color=color)
+        else:
+            ax.plot(df[x_column], df[y_column], label=y_column, color=color)
 
-    fig, ax = plt.subplots()
-    for y_column in selected_y_axis:
-        ax.plot(df[x_column], df[y_column], label=y_column)
+    # Applying the formatter to the y-axis
+    if format_y_axis:
+        ax.yaxis.set_major_formatter(FuncFormatter(millions_formatter))
+    # ax.set_xlabel('X Axis')
+    # ax.set_ylabel('Y Axis')
+    # Set the y-axis step to be +1 or -1 or integer
+    ax.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
+    legend_labels = yaxis
+    legend = ax.legend(loc='lower right', bbox_to_anchor=(1, 1), ncol=len(legend_labels), fancybox=True, fontsize='small', labels=legend_labels)
+    legend.set_bbox_to_anchor(legend_position)
 
-    ax.set_xlabel('X Axis')
-    ax.set_ylabel('Y Axis')
-    ax.legend()
+    # Adjust the spacing around the subplots to make the table occupy all available space
+    plt.subplots_adjust(right=1, left=0.05, top=0.9, bottom=0.18)
 
     img = BytesIO()
     canvas = FigureCanvas(fig)
@@ -252,22 +226,47 @@ def stock_chart(request, stock):
     img.seek(0)
     chart_url = base64.b64encode(img.getvalue()).decode()
     plt.close(fig)
-
-    return render(request, 'chart_content.html', {'chart_url': chart_url, 'stock': stock})
-
+    return chart_url
 
 
 @login_required(login_url='/')
 def correlation_analysis(request, stock_id):
     print(stock_id)
     correlation_data = 'correlation_data'
+    correlation_data = [{'Period':'30-Dec-23', 'Value':37742, 'Blank':4656926},
+                        {'Period':'31-Dec-23', 'Value':77482, 'Blank':4774824},
+                        {'Period':'32-Dec-23', 'Value':67742, 'Blank':6774826},
+                        {'Period':'33-Dec-23', 'Value':47762, 'Blank':4677482},
+                        {'Period':'34-Dec-23', 'Value':35742, 'Blank':6377482},
+                        {'Period':'35-Dec-23', 'Value':94742, 'Blank':3377482},
+                        {'Period':'36-Dec-23', 'Value':74742, 'Blank':3377482},
+                        {'Period':'37-Dec-23', 'Value':64742, 'Blank':2377482},
+                        {'Period':'38-Dec-23', 'Value':84742, 'Blank':5377482},
+                        {'Period':'39-Dec-23', 'Value':44742, 'Blank':7377482},
+                        {'Period':'40-Dec-23', 'Value':24742, 'Blank':9377482},
+                        {'Period':'41-Dec-23', 'Value':44742, 'Blank':7377482},
+                        {'Period':'42-Dec-23', 'Value':64742, 'Blank':6377482},
+                        {'Period':'43-Dec-23', 'Value':44742, 'Blank':4377482},
+                        {'Period':'44-Dec-23', 'Value':54742, 'Blank':8377482},
+                        {'Period':'45-Dec-23', 'Value':44742, 'Blank':2377482},
+                        {'Period':'46-Dec-23', 'Value':84742, 'Blank':2477482},]
     try:
         stock_name = Stock_ID.objects.get(stock_id=stock_id).stock_name
         stock_data = Stock_Details_Table.objects.get(Stock_Details_StockID=stock_id)
         print(stock_data)
-        return render(request, 'correlation_analysis.html', {'correlation_data': correlation_data})
-    except:
+        data = correlation_data
+        x_axis = list(correlation_data[0].keys())[:1]
+        y_axis = list(correlation_data[0].keys())[1:]
+        colors = ['blue', 'green']
+        legend_position = (0.58, 1)
+        bars = 0
+
+        chart_url = stock_chart(x_axis, y_axis, data, colors, bars, legend_position, format_y_axis=True)
+        return render(request, 'correlation_analysis.html', {'correlation_data': correlation_data,
+                                                             'chart_url': chart_url, 'stock_id': stock_id})
+    except Exception as e:
         print("invalid stock id")
+        print(f"Exception: {e}")
         messages.error(request, 'Invalid {} stock name'.format(stock_name))
 
 
@@ -280,4 +279,70 @@ def is_valid_stock(stock_input):
     if stock_input.lower() in stocks:
         return True
     return False
+
+def millions_formatter(x, pos):
+    return f"${x / 1e6:.1f}M"
+
+
+
+def get_data(request, stock_id, selected_value):
+
+    print(stock_id)
+    if selected_value == '1':
+        table_data = [{'Period':'30-Dec-23', 'Value':37742, 'Blank':4656926},
+                        {'Period':'31-Dec-23', 'Value':77482, 'Blank':4774824},
+                        {'Period':'32-Dec-23', 'Value':67742, 'Blank':6774826},
+                        {'Period':'33-Dec-23', 'Value':47762, 'Blank':4677482},
+                        {'Period':'34-Dec-23', 'Value':35742, 'Blank':6377482},
+                        {'Period':'35-Dec-23', 'Value':94742, 'Blank':3377482},
+                        {'Period':'36-Dec-23', 'Value':74742, 'Blank':3377482},
+                        {'Period':'37-Dec-23', 'Value':64742, 'Blank':2377482},
+                        {'Period':'38-Dec-23', 'Value':84742, 'Blank':5377482},
+                        {'Period':'39-Dec-23', 'Value':44742, 'Blank':7377482},
+                        {'Period':'40-Dec-23', 'Value':24742, 'Blank':9377482},
+                        {'Period':'41-Dec-23', 'Value':44742, 'Blank':7377482},
+                        {'Period':'42-Dec-23', 'Value':64742, 'Blank':6377482},
+                        {'Period':'43-Dec-23', 'Value':44742, 'Blank':4377482},
+                        {'Period':'44-Dec-23', 'Value':54742, 'Blank':8377482},
+                        {'Period':'45-Dec-23', 'Value':44742, 'Blank':2377482},
+                        {'Period':'46-Dec-23', 'Value':84742, 'Blank':2477482},]
+    else:
+        table_data = [{'Period':'30-Dec-23', 'Value':27742, 'Blank':4656926},
+                        {'Period':'31-Dec-23', 'Value':57482, 'Blank':4774824},
+                        {'Period':'32-Dec-23', 'Value':37742, 'Blank':6774826},
+                        {'Period':'33-Dec-23', 'Value':67762, 'Blank':4677482},
+                        {'Period':'34-Dec-23', 'Value':95742, 'Blank':6377482},
+                        {'Period':'35-Dec-23', 'Value':24742, 'Blank':3377482},
+                        {'Period':'36-Dec-23', 'Value':44742, 'Blank':3377482},
+                        {'Period':'37-Dec-23', 'Value':24742, 'Blank':2377482},
+                        {'Period':'38-Dec-23', 'Value':34742, 'Blank':5377482},
+                        {'Period':'39-Dec-23', 'Value':64742, 'Blank':7377482},
+                        {'Period':'40-Dec-23', 'Value':74742, 'Blank':9377482},
+                        {'Period':'41-Dec-23', 'Value':34742, 'Blank':7377482},
+                        {'Period':'42-Dec-23', 'Value':84742, 'Blank':6377482},
+                        {'Period':'43-Dec-23', 'Value':84742, 'Blank':4377482},
+                        {'Period':'44-Dec-23', 'Value':34742, 'Blank':8377482},
+                        {'Period':'45-Dec-23', 'Value':54742, 'Blank':2377482},
+                        {'Period':'46-Dec-23', 'Value':44742, 'Blank':2477482},]
+    # stock_name = Stock_ID.objects.get(stock_id=stock_id).stock_name
+    # stock_data = Stock_Details_Table.objects.get(Stock_Details_StockID=stock_id)
+    # print(stock_data)
+    data = table_data
+    x_axis = list(table_data[0].keys())[:1]
+    y_axis = list(table_data[0].keys())[1:]
+    graph_data_y1 = []
+    graph_data_y2 = []
+    for row in table_data:
+        graph_data_y1.append(row['Value'])
+        graph_data_y2.append(row['Blank'])
+    colors = ['blue', 'green']
+    legend_position = (0.58, 1)
+    bars = 0
+
+    chart_url = stock_chart(x_axis, y_axis, data, colors, bars, legend_position, format_y_axis=True)
+
+    data = {'table_data': table_data, 'graph_data_y1': graph_data_y1, 'graph_data_y2': graph_data_y2,
+            'chart_url': chart_url}
+
+    return JsonResponse(data)
 

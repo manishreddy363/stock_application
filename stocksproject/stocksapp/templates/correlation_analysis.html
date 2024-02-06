@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correlation Analysis</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <style>
         body, html {
             height: 100%;
@@ -20,7 +22,7 @@
         #top {
             flex: 1;
             max-height: 12%;
-            overflow: auto;
+            {% comment %} overflow: auto; {% endcomment %}
             border: 1px solid black; /* Add black border */
             {% comment %} padding: 2px; {% endcomment %}
         }
@@ -30,20 +32,20 @@
             flex: 1.8;
             max-height: 48%;
             display: flex;
-            overflow: auto; /* Enable vertical scrolling */
+            {% comment %} overflow: auto; /* Enable vertical scrolling */ {% endcomment %}
             justify-content: space-between;
             border: 1px solid black; /* Add black border */
         }
 
         #center-left {
             flex: 0.45;
-            height: 100%;
+            height: 90%;
             border: 1px solid black; /* Add black border */
         }
 
         #center-right {
             flex: 0.55;
-            height: 100%;
+            height: 90%;
             border: 1px solid black; /* Add black border */
         }
 
@@ -53,20 +55,67 @@
             max-height: 40%;
             {% comment %} justify-content: space-between;
             align-items: center;{% endcomment %}
-            overflow: auto; /* Enable vertical scrolling */ 
+            {% comment %} overflow: auto; /* Enable vertical scrolling */  {% endcomment %}
             border: 1px solid black; /* Add black border */
-        }
+        }      
         
-        
-        #bottom-left, #bottom-center, #bottom-right {
-            flex: 1;
+        #bottom-left {
+            flex: 0.2;
             height: 100%;
             border: 1px solid black; /* Add black border */
         }
 
         #bottom-center {
-            flex: 0.3;
+            flex: 0.35;
+            height: 100%;
             border: 1px solid black; /* Add black border */
+        }
+
+        #bottom-right {
+            flex: 0.45;
+            height: 100%;
+            border: 1px solid black; /* Add black border */
+        }
+
+        table {
+            margin: 0;
+            padding: 0;
+            font-size: 12px;
+            width: 100%;
+            height: auto;
+            border: 1px solid #000000; /* Border width and color */;
+            border-collapse: collapse;
+        }
+
+        th {
+            border: 1px solid #000000; /* Border width and color for cells */
+            background-color: #c6c6c6;
+        }
+
+        td {
+            border: 1px solid #000000; /* Border width and color for cells */
+            background-color: white;
+        }
+
+        tbody {
+            font-size: 12px;
+            border: 1px solid #000000; /* Border width and color for cells */
+        }
+
+        .grid-cell {
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow: auto;
+        }
+
+        .boxed {
+            border: 2px solid #333;
+            padding: 5px;
+            margin-top: -2%;
+            margin-left: 70%;
+            width: 220px; /* Set the maximum width for the box */
+            height: 10px;
+            background-color: snow;
         }
 
     </style>
@@ -90,37 +139,40 @@
             <span style="color: red;">{% if error_message %}{{ error_message }}{% endif %}</span>
         </div> {% endcomment %}
         <h5 style="margin-top: -2.75%;">Search</h5>
+        <div class="boxed">
+            <p style="margin-top: -2%;"><b>Correlation Coefficient</b></p>
+            <p style="margin-top: -15%; margin-left:85%; color:blue;"><b>0.42</b></p>
+        </div>
     </div>
 
     <div id="center"">
 
-        <div id="center-left">
+        <div class="grid-cell" id="center-left">
             <!-- Content for the center-left 45% -->
-            <p>Center Left Content</p>
             <div>
-                <h1>Equity-Insider</h1>
-                <h1>Equity-Insider</h1>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
+                <table id="table">
+                    <caption><b>Cash and Cash Equivalents</b></caption>
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Value</th>
+                            <th>Blank</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <div id="center-right"">
+        <div class="grid-cell" id="center-right">
             <!-- Content for the center-right 55% -->
-            <p>Center Right Content</p>
-            <div>
-                <h1>Equity-Insider</h1>
-                <h1>Equity-Insider</h1>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
+            {% comment %} <p style="text-align:center; margin-top:0"><b>Correlation Coefficient</b></p>
+            <p style="text-align:center; margin-top:-2%;"><b>0.42</b></p> {% endcomment %}
+            <p style="margin-top:0; font-size:14px;"><b>Cash and Cash Equivalents: vs CA-ACP8 BY Quarter</b></p>
+            <div id="graph">
+                {% comment %} <img id="chartImage" src="data:image/png;base64,{{ chart_url }}" alt="Chart"> {% endcomment %}
+                <img id="chartImage" src="data:image/png;base64,{{ chart_url }}" alt="Chart" style="width: auto; height: auto;">
             </div>
         </div>
 
@@ -130,16 +182,15 @@
 
         <div id="bottom-left">
             <!-- Content for the bottom-left 20% -->
-            <p>Bottom Left Content</p>
+            <p><b>1. Select a Variable</b></p>
             <div>
-                <h1>Equity-Insider</h1>
-                <h1>Equity-Insider</h1>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
+                <select id="dropdown">
+                    <option value="1">Option 1</option>
+                    <option value="2">Option 2</option>
+                    <option value="3">Option 3</option>
+                    <option value="4">Option 4</option>
+                    <option value="5">Option 5</option>
+                </select>
             </div>
         </div>
 
@@ -176,6 +227,47 @@
     </div>
 
 </div>
+<script>
+    // Function to update table and graph based on selected value
+    function updateData(selectedValue) {
+        var stockId = '{{ stock_id }}';
+        $.ajax({
+            url: `/stocksapp/get_data/${stockId}/${selectedValue}/`,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                // Update table
+                var tableHtml = '';
+                $.each(data.table_data, function(index, row) {
+                    tableHtml += `<tr><td>${row.Period}</td><td>${row.Value}</td><td>${row.Blank}</td></tr>`;
+                });
+                $('#table tbody').html(tableHtml);
 
+                // Update graph
+                // Replace this with your logic to update the graph using data.graph_data_y1 and data.graph_data_y2
+                // In this example, we update the 'src' attribute of the 'chartImage' element
+                $('#chartImage').attr('src', `data:image/png;base64,${data.chart_url}`);
+            },
+            error: function(error) {
+                console.error('Error fetching data:', error);
+            }
+        });
+    }
+
+    // Bind the function to the change event of the dropdown
+    $(document).ready(function() {
+        // Get the default selected value
+        var defaultSelectedValue = $('#dropdown').val();
+        // Update the table and graph for the default selected value
+        updateData(defaultSelectedValue);
+
+        // Bind the function to the change event of the dropdown
+        $('#dropdown').on('change', function() {
+            var selectedValue = $(this).val();
+            updateData(selectedValue);
+        });
+    });
+
+</script>
 </body>
 </html>

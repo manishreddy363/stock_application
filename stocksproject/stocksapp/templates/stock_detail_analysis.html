@@ -6,6 +6,20 @@
     <title>Equity-Insider</title>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <style>
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px; 
+        }
+        
+        ::-webkit-scrollbar-track {
+            background-color: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 5px;
+        }
+        
         body {
             display: grid;
             grid-template-columns: 50% 50%;
@@ -31,6 +45,12 @@
             grid-template-columns: 50% 50%;
         }
 
+        .table-container {
+            width: 320px; /* Increase padding for larger box size */
+            max-height: 207px; /* Adjust the value as needed */
+            overflow-y: auto;
+        }
+
         .naics-code {
             width: 300px; /* Increase padding for larger box size */
             font-size: 14px; /* Increase font size for bigger text */
@@ -39,7 +59,7 @@
         .naics-code td, .naics-code th {
             width: 300px; /* Increase padding for larger box size */
             font-size: 12px; /* Increase font size for bigger text */
-    }
+        }
 
         .title {
             grid-column: span 2; /* Span the entire width */
@@ -58,13 +78,25 @@
             margin-top: 1%;
         }
 
-        #toggleButton {
+        #toggleButton1 {
             margin-left: 92%;
             margin-top: -5%;
             padding: 0px;
             width: 50px;
+            background-color: gray;
         }
 
+        #toggleButton2 {
+            margin-left: 553px;
+            padding: 0px; 
+            width: 50px;
+            height: 19.5px;
+            background-color: gray;
+        }
+        
+        .submit-button {
+            background-color: gray;
+        }
         /* Style for the search bar */
         .search-bar {
             display: flex;
@@ -83,15 +115,20 @@
             border-collapse: collapse;
         }
 
-        th, td {
+        th {
             border: 1px solid #000000; /* Border width and color for cells */
+            background-color: #c6c6c6;
             {% comment %} padding: 8px; /* Add padding for better appearance */ {% endcomment %}
+        }
+
+        td {
+            border: 1px solid #000000; /* Border width and color for cells */
+            background-color: white;
         }
 
         tbody {
             font-size: 12px;
             border: 1px solid #000000; /* Border width and color for cells */
-
         }
     
     </style>
@@ -142,7 +179,7 @@
         
         <!-- Second nested cell (Bottom Left) -->
         <div class="nested-cell-vertical">
-            <div>
+            <div class="table-container">
                 <table class="naics-code">
                     <caption><b>NAICS Code:</b></caption>
                     <thead>
@@ -167,10 +204,10 @@
     </div>
     
     <!-- Second Part (Top Right) -->
-    <div class="grid-cell" id="part2">
-        <button id="toggleButton" onclick="changeContent()">Chart</button>
-        <div id="contentContainer">
-            <div id="tableContent">
+    <div class="grid-cell">
+        <button id="toggleButton1" onclick="changeContent1()">Chart</button>
+        <div>
+            <div id="tableContent1">
                 <table>
                     <thead>
                         <tr>
@@ -194,35 +231,42 @@
                     </tbody>
                 </table>
             </div>
-            <div id="chartContent" style="display:none;">
+            <div id="chartContent1" style="display:none;">
                 {% comment %} <img id="chartImage" src="data:image/png;base64,{{ chart_url }}" alt="Chart"> {% endcomment %}
-                <img id="chartImage" src="data:image/png;base64,{{ chart_url }}" alt="Chart" style="width: auto; height: auto;">
+                <img id="chartImage" src="data:image/png;base64,{{ chart_url_1 }}" alt="Chart" style="width: auto; height: auto;">
             </div>
         </div>
     </div>
 
     <!-- Third Part (Bottom Left) -->
     <div class="grid-cell">
-        <table>
-            <thead>
-                <tr>
-                    <th>Filing Date</th>
-                    <th>Fiscal Quarter End</th>
-                    <th>Stock Price (10 Days After Fiscal Quarter End)</th>
-                    <th>Stock Price (Next Day)</th>
-                    <th>Impact</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for data in fiscal_data %}
+        <button id="toggleButton2" onclick="changeContent2()">Chart</button>
+        <div id="tableContent2">
+            <table>
+                <thead>
                     <tr>
-                        {% for key,value in data.items %}
-                            <td>{{ value }}</td>
-                        {% endfor %}
+                        <th>Filing Date</th>
+                        <th>Fiscal Quarter End</th>
+                        <th>Stock Price (10 Days After Fiscal Quarter End)</th>
+                        <th>Stock Price (Next Day)</th>
+                        <th>Impact</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for data in fiscal_data %}
+                        <tr>
+                            {% for key,value in data.items %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div id="chartContent2" style="display:none;">
+            {% comment %} <img id="chartImage" src="data:image/png;base64,{{ chart_url }}" alt="Chart"> {% endcomment %}
+            <img id="chartImage" src="data:image/png;base64,{{ chart_url_2 }}" alt="Chart" style="width: auto; height: auto;">
+        </div>
     </div>
 
     <!-- Fourth Part (Bottom Right) -->
@@ -263,10 +307,10 @@
     </div>
 
     <script>
-        function changeContent() {
-            var tableContent = $('#tableContent');
-            var chartContent = $('#chartContent');
-            var toggleButton = $('#toggleButton');
+        function changeContent1() {
+            var tableContent = $('#tableContent1');
+            var chartContent = $('#chartContent1');
+            var toggleButton = $('#toggleButton1');
         
             if (tableContent.is(':visible')) {
                 // Table is visible, switch to chart
@@ -279,7 +323,25 @@
                 tableContent.show();
                 toggleButton.text('Chart');
             }
-            return false; // Prevents the default link behavior
+            return false;
+        }
+        function changeContent2() {
+            var tableContent = $('#tableContent2');
+            var chartContent = $('#chartContent2');
+            var toggleButton = $('#toggleButton2');
+        
+            if (tableContent.is(':visible')) {
+                // Table is visible, switch to chart
+                tableContent.hide();
+                chartContent.show();
+                toggleButton.text('Table');
+            } else {
+                // Chart is visible, switch to table
+                chartContent.hide();
+                tableContent.show();
+                toggleButton.text('Chart');
+            }
+            return false;
         }
     </script>
     
