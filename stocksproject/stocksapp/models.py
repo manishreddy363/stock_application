@@ -108,3 +108,29 @@ class Next_filing_dates(models.Model):
 
     def __str__(self):
         return str(self.Next_Filing_Dates_StockID)
+
+class Variable_table(models.Model):
+    Variables_VariableID = models.IntegerField()
+    Variables_VariableName = models.CharField(max_length=30)
+    Variables_VariableShort = models.CharField(max_length=30)
+
+    def __str__(self):
+        return str(self.Variables_VariableName)
+
+class Correlation_values(models.Model):
+    T3_Index = models.CharField(max_length=30)
+    Correlation_Coefficient = models.FloatField()
+
+    def __str__(self):
+        return str(self.T3_Index)
+
+class EQ_Table(models.Model):
+    Period = models.CharField(max_length=30)
+    Value  = models.FloatField()
+    Sum_of_StockValue  = models.FloatField()
+    Index = models.CharField(max_length=30)
+    Symbol = models.CharField(max_length=30)
+    Quarters = models.CharField(max_length=30)
+
+    def __str__(self):
+        return str(self.Index)

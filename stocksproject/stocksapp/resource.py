@@ -2,7 +2,6 @@ from import_export import resources,fields
 from .models import *
 from import_export.widgets import ForeignKeyWidget
 
-
 class Stock_Details_Resource(resources.ModelResource):
     Stock_Details_StockID = fields.Field(
         column_name = 'Stock_Details_StockID',
@@ -47,3 +46,18 @@ class Next_filing_dates_Resource(resources.ModelResource):
     )
     class Meta:
         model = Next_filing_dates
+
+class Variable_table_Resource(resources.ModelResource):
+    class Meta:
+        model = Variable_table
+
+class Correlation_values_Resource(resources.ModelResource):
+    class Meta:
+        model = Correlation_values
+
+class EQ_Table_Resource(resources.ModelResource):
+    Sum_of_StockValue = fields.Field(attribute='Sum_of_StockValue', column_name='Sum of StockValue')
+
+    class Meta:
+        model = EQ_Table
+        fields = ('id','Period','Value','Sum_of_StockValue','Index','Symbol','Quarters')
