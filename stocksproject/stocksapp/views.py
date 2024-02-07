@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Stock_ID, Stock_Details_Table,Stock_Naics_Table,stock_historical_data_v3,Next_filing_dates
+from .models import Stock_ID, Stock_Details_Table,Stock_Naics_Table,stock_historical_data_v3,Next_filing_dates, Variable_table, Correlation_values,EQ_Table
 from .models import stock_Earnings_4 as stock_Earnings
 from .forms import StockForm
 import pandas as pd
@@ -10,10 +10,14 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
+<<<<<<< Updated upstream
 # import random
 from matplotlib.ticker import FuncFormatter
 from django.http import JsonResponse
 import matplotlib
+=======
+from .resource import EQ_Table_Resource
+>>>>>>> Stashed changes
 
 @login_required(login_url='/')
 def stock_list(request):
@@ -280,6 +284,7 @@ def is_valid_stock(stock_input):
         return True
     return False
 
+<<<<<<< Updated upstream
 def millions_formatter(x, pos):
     return f"${x / 1e6:.1f}M"
 
@@ -346,3 +351,86 @@ def get_data(request, stock_id, selected_value):
 
     return JsonResponse(data)
 
+=======
+
+def get_variable_list():
+
+    variable_list_queryset = Variable_table.objects.all().values_list('Variables_VariableID','Variables_VariableName')
+    variable_list_object_1 = list(variable_list_queryset)
+    var_list = []
+    for item in variable_list_object_1:
+        var_dict = {"variable_id":item[0],"variable_name":item[1]}
+        var_list.append(var_dict)
+    # return variable_list_object
+    # variable_list_object_2 = Variable_table.objects.all().values_list('Variables_VariableID', 'Variables_VariableName')
+    # return render(request, '3_page.html', {'variable_list': variable_list_object_1,'variable_list_object_2':variable_list_object_2})
+    return var_list
+
+
+def get_correlation_values(stock,variable_id):
+    try:
+        variable_name = Variable_table.objects.get(Variables_VariableID=int(variable_id)).Variables_VariableShort
+    except:
+        print("invalid variable id")
+        messages.error(request, 'Invalid {} variable Id'.format(variable_id))
+
+    try:
+        stock_id = Stock_ID.objects.get(stock_name=stock).stock_id
+    except:
+        print("invalid stock id")
+        messages.error(request, 'Invalid {} stock Id'.format(stock_name))
+
+    correlation_values_list_queryset = Correlation_values.objects.filter(T3_Index__icontains=variable_name,Correlation_stock_id=stock_id).all().values()
+    correlation_values_list = list(correlation_values_list_queryset)
+
+    return correlation_values_list
+
+    # return render(request, '3_page.html', {'variable_list': correlation_values_list})
+
+def get_eq_values(stock,index):
+    # try:
+    #     variable_name = Correlation_values.objects.get(T3_Index=int(variable_id)).Variables_VariableShort
+    # except:
+    #     print("invalid variable id")
+    #     messages.error(request, 'Invalid {} variable Id'.format(variable_id))
+
+    eq_list_queryset = EQ_Table.objects.filter(Index=index,Symbol=stock).values()
+    eq_values_list = list(eq_list_queryset)
+    return eq_values_list
+    # return render(request, '3_page.html', {'variable_list': eq_values_list})
+
+
+def page_3_api(request,stock='DOL.TO',variable=None,index=None):
+    """
+    "page_3": {
+    # allways get all
+    "variable_list": [ {"id":1,"name":"variable_name"}, {"id":1,"name":"variable_name"} ],
+
+    # filter based on selected variable & stock ( by default 1st variable selected for any stock)
+    "correlation_list": [{"index":"","correlation_Coefficient":""},{"index":"","correlation_Coefficient":""}]
+
+    # filter based on selected correlation & stock ( by default 1st correlation selected for any stock)
+    "eq_list": [{"Period":"","Value":"","StockValue":"","Quarters":""},{"Period":"","Value":"","StockValue":"","Quarters":""}]
+    }
+    """
+
+    var_list = get_variable_list()
+
+    if variable is not None:
+        select_var_id = variable
+    else:
+        select_var_id = var_list[0]['variable_id']
+
+    cor_list = get_correlation_values(stock,select_var_id)
+
+    if index is not None:
+        select_index = index
+    else:
+        select_index = cor_list[0]['T3_Index']
+
+    eq_list = get_eq_values(stock,select_index)
+
+    return render(request, '3_page.html', {"data":{'variable_list': var_list,
+                                           'correlation_list':cor_list,
+                                           'eq_list':eq_list}})
+>>>>>>> Stashed changes

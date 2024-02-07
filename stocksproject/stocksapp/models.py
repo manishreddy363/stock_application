@@ -120,6 +120,7 @@ class Variable_table(models.Model):
 class Correlation_values(models.Model):
     T3_Index = models.CharField(max_length=30)
     Correlation_Coefficient = models.FloatField()
+    Correlation_stock_id = models.ForeignKey(Stock_ID, on_delete=models.CASCADE,to_field='stock_id')
 
     def __str__(self):
         return str(self.T3_Index)

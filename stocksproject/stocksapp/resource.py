@@ -52,6 +52,11 @@ class Variable_table_Resource(resources.ModelResource):
         model = Variable_table
 
 class Correlation_values_Resource(resources.ModelResource):
+    Correlation_stock_id = fields.Field(
+        column_name = 'Correlation_stock_id',
+        attribute = 'Correlation_stock_id',
+        widget=ForeignKeyWidget(Stock_ID,'stock_id')
+    )
     class Meta:
         model = Correlation_values
 
