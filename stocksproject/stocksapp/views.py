@@ -10,14 +10,10 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
-<<<<<<< Updated upstream
 # import random
 from matplotlib.ticker import FuncFormatter
 from django.http import JsonResponse
 import matplotlib
-=======
-from .resource import EQ_Table_Resource
->>>>>>> Stashed changes
 
 @login_required(login_url='/')
 def stock_list(request):
@@ -284,7 +280,6 @@ def is_valid_stock(stock_input):
         return True
     return False
 
-<<<<<<< Updated upstream
 def millions_formatter(x, pos):
     return f"${x / 1e6:.1f}M"
 
@@ -351,7 +346,6 @@ def get_data(request, stock_id, selected_value):
 
     return JsonResponse(data)
 
-=======
 
 def get_variable_list():
 
@@ -433,4 +427,3 @@ def page_3_api(request,stock='DOL.TO',variable=None,index=None):
     return render(request, '3_page.html', {"data":{'variable_list': var_list,
                                            'correlation_list':cor_list,
                                            'eq_list':eq_list}})
->>>>>>> Stashed changes
