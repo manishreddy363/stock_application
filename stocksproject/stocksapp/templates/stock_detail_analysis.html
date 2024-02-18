@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Equity-Insider</title>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         ::-webkit-scrollbar {
             width: 10px;
@@ -232,8 +233,7 @@
                 </table>
             </div>
             <div id="chartContent1" style="display:none;">
-                {% comment %} <img id="chartImage" src="data:image/png;base64,{{ chart_url }}" alt="Chart"> {% endcomment %}
-                <img id="chartImage" src="data:image/png;base64,{{ chart_url_1 }}" alt="Chart" style="width: auto; height: auto;">
+                <canvas id="myChart1" width="400" height="200"></canvas>
             </div>
         </div>
     </div>
@@ -264,8 +264,7 @@
             </table>
         </div>
         <div id="chartContent2" style="display:none;">
-            {% comment %} <img id="chartImage" src="data:image/png;base64,{{ chart_url }}" alt="Chart"> {% endcomment %}
-            <img id="chartImage" src="data:image/png;base64,{{ chart_url_2 }}" alt="Chart" style="width: auto; height: auto;">
+            <canvas id="myChart2" width="400" height="200"></canvas>
         </div>
     </div>
 
@@ -343,6 +342,149 @@
             }
             return false;
         }
+
+        var labels_h = JSON.parse('{{ hist_xaxis|safe }}');
+        var chartData1_h = JSON.parse('{{ hist_yaxis1|safe }}');
+        var chartData2_h = JSON.parse('{{ hist_yaxis2|safe }}');
+        var chartData3_h = JSON.parse('{{ hist_yaxis3|safe }}');
+
+        var labels_e = JSON.parse('{{ earn_xaxis|safe }}');
+        var chartData1_e = JSON.parse('{{ earn_yaxis1|safe }}');
+        var chartData2_e = JSON.parse('{{ earn_yaxis2|safe }}');
+        var chartData3_e = JSON.parse('{{ earn_yaxis3|safe }}');
+        var chartData4_e = JSON.parse('{{ earn_yaxis4|safe }}');
+        var chartData5_e = JSON.parse('{{ earn_yaxis5|safe }}');
+
+        // Create a Chart using Chart.js
+        var ctx = document.getElementById('myChart2').getContext('2d');
+        var myChart2 = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels_h,
+                datasets: [
+                    {
+                        label: 'Stock Price (10 Days After Fiscal Quarter End)',
+                        data: chartData1_h,
+                        backgroundColor: 'rgb(255, 99, 132)',
+                        type: 'bar',  // Set the type to 'line'
+                        yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                    },
+                    {
+                        label: 'Stock Price (Next Day)',
+                        data: chartData2_h,
+                        backgroundColor: 'rgb(255, 99, 132)',
+                        type: 'bar',  // Set the type to 'bar'
+                        yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                    },
+                    {
+                        label: 'Sum of Impact',
+                        data: chartData3_h,
+                        borderColor: 'rgb(50, 12, 222)',
+                        type: 'line',  // Set the type to 'bar'
+                        fill: false,
+                        yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                    },
+                ],
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            usePointStyle: true  // Set this property to true to use point style for legend items
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            maxRotation: 90, // Adjust the maximum rotation angle
+                            minRotation: 90, // Adjust the minimum rotation angle
+                            autoSkip: false, // Disable auto skipping of ticks
+                        },
+                    },
+                    y: [
+                        {
+                            id: 'y-axis-0',
+                            type: 'linear',
+                            position: 'left',
+                        },
+                    ],
+                },
+            },
+        });
+
+        // Create a Chart using Chart.js
+        var ctx = document.getElementById('myChart1').getContext('2d');
+        var myChart1 = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels_e,
+                datasets: [
+                    {
+                        label: 'Forecasted EPS',
+                        data: chartData1_e,
+                        backgroundColor: 'rgb(255, 99, 132)',
+                        type: 'bar',  // Set the type to 'line'
+                        yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                    },
+                    {
+                        label: 'EI EPS',
+                        data: chartData2_e,
+                        backgroundColor: 'rgb(255, 99, 132)',
+                        type: 'bar',  // Set the type to 'bar'
+                        yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                    },
+                    {
+                        label: 'Actual EPS',
+                        data: chartData3_e,
+                        backgroundColor: 'rgb(50, 12, 222)',
+                        type: 'bar',  // Set the type to 'bar'
+                        yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                    },
+                    {
+                        label: 'F-Delta',
+                        data: chartData4_e,
+                        borderColor: 'rgb(20, 132, 122)',
+                        type: 'line',  
+                        fill: false,
+                        yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                    },
+                    {
+                        label: 'EI-Delta',
+                        data: chartData5_e,
+                        borderColor: 'rgb(150, 16, 52)',
+                        type: 'line',  
+                        fill: false,
+                        yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                    },
+                ],
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            usePointStyle: true  // Set this property to true to use point style for legend items
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            maxRotation: 90, // Adjust the maximum rotation angle
+                            minRotation: 90, // Adjust the minimum rotation angle
+                            autoSkip: false, // Disable auto skipping of ticks
+                        },
+                    },
+                    y: [
+                        {
+                            id: 'y-axis-0',
+                            type: 'linear',
+                            position: 'left',
+                        },
+                    ],
+                },
+            },
+        });
     </script>
     
 </body>

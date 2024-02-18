@@ -10,10 +10,11 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
-# import random
+import random
 from matplotlib.ticker import FuncFormatter
 from django.http import JsonResponse
 import matplotlib
+import json
 
 @login_required(login_url='/')
 def stock_list(request):
@@ -36,22 +37,7 @@ def stock_list(request):
 
 @login_required(login_url='/')
 def stock_analysis(request, stock):
-    # Retrieve stock details based on the stock symbol
-    # (You need to implement this view)
-    # For example, you might query a database for the details of the selected stock.
-    """
-    stock_analysis_data = {
-    "stock_id_name":"ACP.to"
-    "stock_name":"",
-    "stock_description":"",
-    "stock_revenue":{"county":"","provins":"","revenue":29984},
-    "naics_code":[{},{},{}],
-    "fiscal_data":[{},{},{}],
-    "eps_data":[{},{},{}],
-    "next_period":[{},{},{}],
-    "filing_date":""
-    }
-    """
+
     print(stock)
     stock_analysis_data ={}
     # revenue by geography
@@ -85,14 +71,25 @@ def stock_analysis(request, stock):
         for item in stock_historical_data:
             item_historical_dict = {'filing_date':item['Stock_Historical_Data_V3_FilingDate'],
                                     'fiscal_quarter_end':item['Stock_Historical_Data_V3_FiscalQuarterEnd'],
-                                    'stock_price':item['Stock_Historical_Data_V3_FQE_10'],
+                                    'stock_price':random.randint(1,5),      # change this later
                                     'next_day_stock_price':item['Stock_Historical_Data_V3_Price_Next_Day'],
                                     'impact':item['Stock_Historical_Data_V3_Impact']}
-            # 'stock_price':random.randint(1,5),
             stock_historical_list.append(item_historical_dict)
 
         stock_analysis_data['fiscal_data'] = stock_historical_list
-
+        hist_xaxis  = []
+        hist_yaxis1 = []
+        hist_yaxis2 = []
+        hist_yaxis3 = []
+        for stock_h in stock_historical_list:
+            hist_xaxis.append(stock_h['filing_date'])      #change x axis values later
+            hist_yaxis1.append(stock_h['stock_price'])
+            hist_yaxis2.append(stock_h['next_day_stock_price'])
+            hist_yaxis3.append(stock_h['impact'])
+        chart_data_hx = json.dumps(hist_xaxis)
+        chart_data_hy1 = json.dumps(hist_yaxis1)
+        chart_data_hy2 = json.dumps(hist_yaxis2)
+        chart_data_hy3 = json.dumps(hist_yaxis3)
         #EPS table
 
         stock_earnings_data = stock_Earnings.objects.filter(Stock_Earnings_4_StockID
@@ -110,6 +107,25 @@ def stock_analysis(request, stock):
 
         stock_analysis_data['eps_data'] = stock_earnings_list
 
+        earn_xaxis  = []
+        earn_yaxis1 = []
+        earn_yaxis2 = []
+        earn_yaxis3 = []
+        earn_yaxis4 = []
+        earn_yaxis5 = []
+        for stock_e in stock_earnings_list:
+            earn_xaxis.append(stock_e['filing_date'])      #change x axis values later
+            earn_yaxis1.append(stock_e['forecasted_eps'])
+            earn_yaxis2.append(stock_e['ei_eps'])
+            earn_yaxis3.append(stock_e['actual_eps'])
+            earn_yaxis4.append(stock_e['f_delta'])
+            earn_yaxis5.append(stock_e['ei_delta'])
+        chart_data_ex = json.dumps(earn_xaxis)
+        chart_data_ey1 = json.dumps(earn_yaxis1)
+        chart_data_ey2 = json.dumps(earn_yaxis2)
+        chart_data_ey3 = json.dumps(earn_yaxis3)
+        chart_data_ey4 = json.dumps(earn_yaxis4)
+        chart_data_ey5 = json.dumps(earn_yaxis5)
         #next period
         next_filing_data = Next_filing_dates.objects.filter(Next_Filing_Dates_StockID
                                                                    =stock_id).values()
@@ -165,7 +181,7 @@ def stock_analysis(request, stock):
         bars2 = 2
 
         chart_url_1 = stock_chart(x_axis_1, y_axis_1, data1, colors1, bars1, legend_position1)
-        chart_url_2 = stock_chart(x_axis_2, y_axis_2, data2, colors2, bars2, legend_position2)
+        # chart_url_2 = stock_chart(x_axis_2, y_axis_2, data2, colors2, bars2, legend_position2)
 
         return render(request, 'stock_detail_analysis.html', {'stock_analysis_data': stock_analysis_data,
                                                               'eps_data': stock_earnings_list,
@@ -175,7 +191,8 @@ def stock_analysis(request, stock):
                                                               'next_period_data':next_filing_list,
                                                               'form': form, 'error_message': error_message,
                                                               'stock_input':stock, 'chart_url_1': chart_url_1,
-                                                              'chart_url_2': chart_url_2})
+                                                              'hist_xaxis': chart_data_hx, 'hist_yaxis1': chart_data_hy1, 'hist_yaxis2': chart_data_hy2, 'hist_yaxis3': chart_data_hy3,
+                                                              'earn_xaxis': chart_data_ex, 'earn_yaxis1': chart_data_ey1, 'earn_yaxis2': chart_data_ey2, 'earn_yaxis3': chart_data_ey3, 'earn_yaxis4': chart_data_ey4, 'earn_yaxis5': chart_data_ey5})
     except Exception as e:
         print("invalid stock id")
         print(f"Exception: {e}")
@@ -230,40 +247,67 @@ def stock_chart(xaxis, yaxis, data, colors, bars, legend_position, format_y_axis
 
 
 @login_required(login_url='/')
-def correlation_analysis(request, stock_id):
+def correlation_analysis(request, stock_id, variable=None, coefficient=None):
+
     print(stock_id)
-    correlation_data = 'correlation_data'
-    correlation_data = [{'Period':'30-Dec-23', 'Value':37742, 'Blank':4656926},
-                        {'Period':'31-Dec-23', 'Value':77482, 'Blank':4774824},
-                        {'Period':'32-Dec-23', 'Value':67742, 'Blank':6774826},
-                        {'Period':'33-Dec-23', 'Value':47762, 'Blank':4677482},
-                        {'Period':'34-Dec-23', 'Value':35742, 'Blank':6377482},
-                        {'Period':'35-Dec-23', 'Value':94742, 'Blank':3377482},
-                        {'Period':'36-Dec-23', 'Value':74742, 'Blank':3377482},
-                        {'Period':'37-Dec-23', 'Value':64742, 'Blank':2377482},
-                        {'Period':'38-Dec-23', 'Value':84742, 'Blank':5377482},
-                        {'Period':'39-Dec-23', 'Value':44742, 'Blank':7377482},
-                        {'Period':'40-Dec-23', 'Value':24742, 'Blank':9377482},
-                        {'Period':'41-Dec-23', 'Value':44742, 'Blank':7377482},
-                        {'Period':'42-Dec-23', 'Value':64742, 'Blank':6377482},
-                        {'Period':'43-Dec-23', 'Value':44742, 'Blank':4377482},
-                        {'Period':'44-Dec-23', 'Value':54742, 'Blank':8377482},
-                        {'Period':'45-Dec-23', 'Value':44742, 'Blank':2377482},
-                        {'Period':'46-Dec-23', 'Value':84742, 'Blank':2477482},]
+    stock_name = Stock_ID.objects.get(stock_id=stock_id).stock_name
+    error_message = None
+    default_stock_value = stock_name
+    if request.method == 'POST':
+        form = StockForm(request.POST)
+        if form.is_valid():
+            stock_input = form.cleaned_data['stock_input']
+
+            # Add your validation logic here
+            # For example, check if stock_input is valid
+
+            if is_valid_stock(stock_input):
+                # Redirect to another page with a valid input
+                stock_id = Stock_ID.objects.get(stock_name=stock_input).stock_id
+
+                return redirect('correlation_analysis', stock_id=stock_id)
+            else:
+                # Set error_message if the input is invalid
+                error_message = "Invalid stock input."
+
+    else:
+        form = StockForm(initial={'stock_input': default_stock_value})
+
+    var_list = get_variable_list()
+
+    def_select_var_id = var_list[0]['variable_id']
+
+    for var in var_list:
+        if var['variable_id'] == def_select_var_id:
+            select_variable = var['variable_name']
+    cor_list = get_correlation_values(stock_id,def_select_var_id)
+
+    def_select_index = cor_list[0]['T3_Index']
+    for cor in cor_list:
+        if cor['T3_Index'] == def_select_index:
+            corr_coeff_decimal = cor['Correlation_Coefficient']
+            corr_coeff = "{:.2f}".format(corr_coeff_decimal)
+    correlation_data = get_eq_values(stock_name,def_select_index)
+
     try:
         stock_name = Stock_ID.objects.get(stock_id=stock_id).stock_name
-        stock_data = Stock_Details_Table.objects.get(Stock_Details_StockID=stock_id)
-        print(stock_data)
-        data = correlation_data
-        x_axis = list(correlation_data[0].keys())[:1]
-        y_axis = list(correlation_data[0].keys())[1:]
-        colors = ['blue', 'green']
-        legend_position = (0.58, 1)
-        bars = 0
 
-        chart_url = stock_chart(x_axis, y_axis, data, colors, bars, legend_position, format_y_axis=True)
-        return render(request, 'correlation_analysis.html', {'correlation_data': correlation_data,
-                                                             'chart_url': chart_url, 'stock_id': stock_id})
+        xaxis, yaxis1, yaxis2  = [], [], []
+
+        for stock_e in correlation_data:
+            xaxis.append(stock_e['Quarters'])      #change x axis values later
+            yaxis1.append(stock_e['Value'])
+            yaxis2.append(stock_e['Sum_of_StockValue'])
+        chart_data_x = json.dumps(xaxis)
+        chart_data_y1 = json.dumps(yaxis1)
+        chart_data_y2 = json.dumps(yaxis2)
+
+        return render(request, 'correlation_analysis.html', {'stock_id': stock_id, 'stock_name': stock_name, 
+                                                             'correlation_data': correlation_data, 'form': form,
+                                                             'select_index': def_select_index, 'error_message': error_message,
+                                                             'cor_list': cor_list, 'corr_coeff': corr_coeff, 'select_variable': select_variable,
+                                                             'var_list': var_list, 'xaxis': chart_data_x, 
+                                                             'yaxis1': chart_data_y1, 'yaxis2': chart_data_y2})
     except Exception as e:
         print("invalid stock id")
         print(f"Exception: {e}")
@@ -285,64 +329,45 @@ def millions_formatter(x, pos):
 
 
 
-def get_data(request, stock_id, selected_value):
+def get_data(request, stock_id, variable= None, coefficient= None):
 
     print(stock_id)
-    if selected_value == '1':
-        table_data = [{'Period':'30-Dec-23', 'Value':37742, 'Blank':4656926},
-                        {'Period':'31-Dec-23', 'Value':77482, 'Blank':4774824},
-                        {'Period':'32-Dec-23', 'Value':67742, 'Blank':6774826},
-                        {'Period':'33-Dec-23', 'Value':47762, 'Blank':4677482},
-                        {'Period':'34-Dec-23', 'Value':35742, 'Blank':6377482},
-                        {'Period':'35-Dec-23', 'Value':94742, 'Blank':3377482},
-                        {'Period':'36-Dec-23', 'Value':74742, 'Blank':3377482},
-                        {'Period':'37-Dec-23', 'Value':64742, 'Blank':2377482},
-                        {'Period':'38-Dec-23', 'Value':84742, 'Blank':5377482},
-                        {'Period':'39-Dec-23', 'Value':44742, 'Blank':7377482},
-                        {'Period':'40-Dec-23', 'Value':24742, 'Blank':9377482},
-                        {'Period':'41-Dec-23', 'Value':44742, 'Blank':7377482},
-                        {'Period':'42-Dec-23', 'Value':64742, 'Blank':6377482},
-                        {'Period':'43-Dec-23', 'Value':44742, 'Blank':4377482},
-                        {'Period':'44-Dec-23', 'Value':54742, 'Blank':8377482},
-                        {'Period':'45-Dec-23', 'Value':44742, 'Blank':2377482},
-                        {'Period':'46-Dec-23', 'Value':84742, 'Blank':2477482},]
+    stock_name = Stock_ID.objects.get(stock_id=stock_id).stock_name
+    var_list = get_variable_list()
+
+    if variable is not None:
+        select_var_id = variable
     else:
-        table_data = [{'Period':'30-Dec-23', 'Value':27742, 'Blank':4656926},
-                        {'Period':'31-Dec-23', 'Value':57482, 'Blank':4774824},
-                        {'Period':'32-Dec-23', 'Value':37742, 'Blank':6774826},
-                        {'Period':'33-Dec-23', 'Value':67762, 'Blank':4677482},
-                        {'Period':'34-Dec-23', 'Value':95742, 'Blank':6377482},
-                        {'Period':'35-Dec-23', 'Value':24742, 'Blank':3377482},
-                        {'Period':'36-Dec-23', 'Value':44742, 'Blank':3377482},
-                        {'Period':'37-Dec-23', 'Value':24742, 'Blank':2377482},
-                        {'Period':'38-Dec-23', 'Value':34742, 'Blank':5377482},
-                        {'Period':'39-Dec-23', 'Value':64742, 'Blank':7377482},
-                        {'Period':'40-Dec-23', 'Value':74742, 'Blank':9377482},
-                        {'Period':'41-Dec-23', 'Value':34742, 'Blank':7377482},
-                        {'Period':'42-Dec-23', 'Value':84742, 'Blank':6377482},
-                        {'Period':'43-Dec-23', 'Value':84742, 'Blank':4377482},
-                        {'Period':'44-Dec-23', 'Value':34742, 'Blank':8377482},
-                        {'Period':'45-Dec-23', 'Value':54742, 'Blank':2377482},
-                        {'Period':'46-Dec-23', 'Value':44742, 'Blank':2477482},]
-    # stock_name = Stock_ID.objects.get(stock_id=stock_id).stock_name
-    # stock_data = Stock_Details_Table.objects.get(Stock_Details_StockID=stock_id)
-    # print(stock_data)
-    data = table_data
-    x_axis = list(table_data[0].keys())[:1]
-    y_axis = list(table_data[0].keys())[1:]
-    graph_data_y1 = []
-    graph_data_y2 = []
-    for row in table_data:
-        graph_data_y1.append(row['Value'])
-        graph_data_y2.append(row['Blank'])
-    colors = ['blue', 'green']
-    legend_position = (0.58, 1)
-    bars = 0
+        select_var_id = var_list[0]['variable_id']
 
-    chart_url = stock_chart(x_axis, y_axis, data, colors, bars, legend_position, format_y_axis=True)
+    cor_list = get_correlation_values(stock_id,select_var_id)
+    for var in var_list:
+        if var['variable_id'] == int(select_var_id):
+            select_variable = var['variable_name']
+    if coefficient not in [None, 'null']:
+        select_index = coefficient
+    else:
+        select_index = cor_list[0]['T3_Index']
+    for cor in cor_list:
+        if cor['T3_Index'] == select_index:
+            corr_coeff_decimal = cor['Correlation_Coefficient']
+            corr_coeff = "{:.2f}".format(corr_coeff_decimal)
+    stock_name = Stock_ID.objects.get(stock_id=stock_id).stock_name
+    table_data = get_eq_values(stock_name,select_index)
+    
+    xaxis, yaxis1, yaxis2  = [], [], []
 
-    data = {'table_data': table_data, 'graph_data_y1': graph_data_y1, 'graph_data_y2': graph_data_y2,
-            'chart_url': chart_url}
+    for stock in table_data:
+        xaxis.append(stock['Quarters'])      #change x axis values later
+        yaxis1.append(stock['Value'])
+        yaxis2.append(stock['Sum_of_StockValue'])
+    chart_data_x = json.dumps(xaxis)
+    chart_data_y1 = json.dumps(yaxis1)
+    chart_data_y2 = json.dumps(yaxis2)
+
+
+    data = {'table_data': table_data, 'select_index': select_index, 'cor_list': cor_list, 'corr_coeff': corr_coeff, 'select_variable':select_variable,
+            'xaxis': chart_data_x, 'yaxis1': chart_data_y1, 'yaxis2': chart_data_y2}
 
     return JsonResponse(data)
 
@@ -361,18 +386,12 @@ def get_variable_list():
     return var_list
 
 
-def get_correlation_values(stock,variable_id):
+def get_correlation_values(stock_id,variable_id):
     try:
         variable_name = Variable_table.objects.get(Variables_VariableID=int(variable_id)).Variables_VariableShort
     except:
         print("invalid variable id")
-        messages.error(request, 'Invalid {} variable Id'.format(variable_id))
-
-    try:
-        stock_id = Stock_ID.objects.get(stock_name=stock).stock_id
-    except:
-        print("invalid stock id")
-        messages.error(request, 'Invalid {} stock Id'.format(stock_name))
+        messages.error('Invalid {} variable Id'.format(variable_id))
 
     correlation_values_list_queryset = Correlation_values.objects.filter(T3_Index__icontains=variable_name,Correlation_stock_id=stock_id).all().values()
     correlation_values_list = list(correlation_values_list_queryset)
@@ -394,7 +413,7 @@ def get_eq_values(stock,index):
     # return render(request, '3_page.html', {'variable_list': eq_values_list})
 
 
-def page_3_api(request,stock='DOL.TO',variable=None,index=None):
+def page_3_api(request,stock_id,variable=None,index=None):
     """
     "page_3": {
     # allways get all
@@ -415,14 +434,14 @@ def page_3_api(request,stock='DOL.TO',variable=None,index=None):
     else:
         select_var_id = var_list[0]['variable_id']
 
-    cor_list = get_correlation_values(stock,select_var_id)
+    cor_list = get_correlation_values(stock_id,select_var_id)
 
     if index is not None:
         select_index = index
     else:
         select_index = cor_list[0]['T3_Index']
-
-    eq_list = get_eq_values(stock,select_index)
+    stock_name = Stock_ID.objects.get(stock_id=stock_id).stock_name
+    eq_list = get_eq_values(stock_name,select_index)
 
     return render(request, '3_page.html', {"data":{'variable_list': var_list,
                                            'correlation_list':cor_list,

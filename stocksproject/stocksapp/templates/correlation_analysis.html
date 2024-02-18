@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Correlation Analysis</title>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body, html {
             height: 100%;
             margin: 0;
-            {% comment %} font-family: Arial, sans-serif; {% endcomment %}
             background-color:#C8BFE7;
         }
 
@@ -21,10 +21,8 @@
 
         #top {
             flex: 1;
-            max-height: 12%;
-            {% comment %} overflow: auto; {% endcomment %}
+            max-height: 11.2%;
             border: 1px solid black; /* Add black border */
-            {% comment %} padding: 2px; {% endcomment %}
         }
 
         #center {
@@ -32,7 +30,6 @@
             flex: 1.8;
             max-height: 48%;
             display: flex;
-            {% comment %} overflow: auto; /* Enable vertical scrolling */ {% endcomment %}
             justify-content: space-between;
             border: 1px solid black; /* Add black border */
         }
@@ -41,6 +38,7 @@
             flex: 0.45;
             height: 90%;
             border: 1px solid black; /* Add black border */
+            text-align: center;
         }
 
         #center-right {
@@ -53,9 +51,6 @@
             flex: 1;
             display: flex;
             max-height: 40%;
-            {% comment %} justify-content: space-between;
-            align-items: center;{% endcomment %}
-            {% comment %} overflow: auto; /* Enable vertical scrolling */  {% endcomment %}
             border: 1px solid black; /* Add black border */
         }      
         
@@ -77,14 +72,40 @@
             border: 1px solid black; /* Add black border */
         }
 
-        table {
+        #table1 {
             margin: 0;
             padding: 0;
-            font-size: 12px;
             width: 100%;
             height: auto;
             border: 1px solid #000000; /* Border width and color */;
             border-collapse: collapse;
+        }
+
+        #table2 {
+            margin-top: 0;
+            padding: 0;
+            width: 100%;
+            height: auto;
+            border: 1px solid #000000; /* Border width and color */;
+            border-collapse: collapse;
+        }
+
+        #table3 {
+            padding: 0;
+            height: auto;
+            border: 1px solid #000000; /* Border width and color */;
+            border-collapse: collapse;
+            width: 60%; /* Set the width of the table */
+            margin: 0 auto; /* Center the table horizontally */
+        }
+
+        #table3 td {
+            border: 1px solid #000; /* Add border around each cell */
+            padding: 5px; /* Add padding around the content */
+          }
+        
+        #table3 tbody{
+            font-size: 16px;
         }
 
         th {
@@ -110,12 +131,36 @@
 
         .boxed {
             border: 2px solid #333;
-            padding: 5px;
             margin-top: -2%;
             margin-left: 70%;
-            width: 220px; /* Set the maximum width for the box */
-            height: 10px;
+            width: 240px; /* Set the maximum width for the box */
+            height: 23px;
             background-color: snow;
+        }
+
+        .bottom-container-inner {
+            display: flex;
+            max-height: 72%;
+        }
+          
+        .left-section {
+            flex: 60%; /* Set the left section to take 60% of the container's width */
+            overflow: auto; /* Allow content to overflow and provide scrollbar if needed */
+            text-align: center;
+        }
+          
+        .right-section {
+            flex: 40%; /* Set the right section to take 40% of the container's width */
+            overflow: auto; /* Allow content to overflow and provide scrollbar if needed */
+            text-align: center;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center; /* Align items vertically in the center */
+            margin-top: -2%;
+            margin-bottom: 0;
+            margin-left: 0;
         }
 
     </style>
@@ -123,130 +168,170 @@
 </head>
 <body>
 
-<div id="container">
+    <div id="container">
 
-    <div id="top"">
-        <!-- Content for the top 10% -->
-        <p style="margin-top: 0%;"><b>Correlation Analysis</b></p>
-        <h1 style="text-align:center; margin-top: -3.0%;">Equity-Insider</h1>
-        <p style="margin-top: -2%; margin-left: 12%; text-align:center;"><b>by Tenoris<sup>3</sup></b></p>
-        {% comment %} <div class="search-bar">
-            <form method="post" action="{% url 'stock_analysis' stock=stock_input %}">
-                {% csrf_token %}
-                {{ form.stock_input }}
-                <button type="submit" class="submit-button">Submit</button>
-            </form>
-            <span style="color: red;">{% if error_message %}{{ error_message }}{% endif %}</span>
-        </div> {% endcomment %}
-        <h5 style="margin-top: -2.75%;">Search</h5>
-        <div class="boxed">
-            <p style="margin-top: -2%;"><b>Correlation Coefficient</b></p>
-            <p style="margin-top: -15%; margin-left:85%; color:blue;"><b>0.42</b></p>
+        <div id="top">
+            <!-- Content for the top 10% -->
+            <p style="margin-top: 0%;"><b>Correlation Analysis</b></p>
+            <h1 style="text-align:center; margin-top: -3.0%;">Equity-Insider</h1>
+            <p style="margin-top: -2%; margin-left: 12%; text-align:center;"><b>by Tenoris<sup>3</sup></b></p>
+            <div class="search-bar">
+                <form method="post" action="{% url 'correlation_analysis' stock_id=stock_id %}">
+                    {% csrf_token %}
+                    {{ form.stock_input }}
+                    <button type="submit" class="submit-button">Submit</button>
+                </form>
+                <span style="color: red;">{% if error_message %}{{ error_message }}{% endif %}</span>
+            </div>
+            <div class="boxed">
+                <p style="margin-top: 1%;"><b>Correlation Coefficient</b></p>
+                <p id="coefficient" style="margin-top: -14%; margin-left:88%; color:blue;"><b>{{ corr_coeff }}</b></p>
+            </div>
+        </div>
+
+        <div id="center">
+
+            <div class="grid-cell" id="center-left">
+                <!-- Content for the center-left 45% -->
+                <div>
+                    <table id="table1">
+                        <caption id='variable'><b>{{ select_variable }}</b></caption>
+                        <thead>
+                            <tr>
+                                <th>Period</th>
+                                <th id="selectIndexTh"> {{ select_index }}</th>
+                                <th>{{ stock_name }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in correlation_data %}
+                                <tr>
+                                    <td>{{ data.Period }}</td>
+                                    <td>{{ data.Value }}</td>
+                                    <td>{{ data.Sum_of_StockValue }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-cell" id="center-right">
+                <!-- Content for the center-right 55% -->
+                {% comment %} <p style="text-align:center; margin-top:0"><b>Correlation Coefficient</b></p>
+                <p style="text-align:center; margin-top:-2%;"><b>0.42</b></p> {% endcomment %}
+                <p id='chartname' style="margin-top:0; font-size:16px;"><b>{{select_variable}} vs {{select_index}} By Quarter</b></p>
+                <div id="chartContent">
+                    <canvas id="myChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="bottom">
+
+            <div id="bottom-left">
+                <!-- Content for the bottom-left 20% -->
+                <p><b>1. Select a Variable</b></p>
+                <div>
+                    <select id="dropdown">
+                        {% for var in var_list %}
+                            <option value="{{ var.variable_id }}">{{ var.variable_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div id="bottom-center">
+                <!-- Content for the bottom-center 30% -->
+                <p><b>2. Select a Comparative T<sub>3</sub> Index</b></p>
+                <div class="bottom-container-inner">
+                    <div class="left-section">
+                        <table id="table2">
+                            <thead>
+                                <tr>
+                                    <th>T3 Index</th>
+                                    <th>Correlation Coefficient</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for data in cor_list %}
+                                    <tr>
+                                        <td>{{ data.T3_Index }}</td>
+                                        <td>{{ data.Correlation_Coefficient|floatformat:2 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="right-section">
+                        <table id="table3">
+                            {% for data in cor_list %}
+                                    <tr>
+                                        <td><a href="#" class="data-link" data-index="{{ data.T3_Index }}">{{ data.T3_Index }}</a></td>
+                                    </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="bottom-right">
+                <!-- Content for the bottom-right 50% -->
+                </div>
+                </div>
+            </div>
+
+            </div>
+            </div>
+
         </div>
     </div>
-
-    <div id="center"">
-
-        <div class="grid-cell" id="center-left">
-            <!-- Content for the center-left 45% -->
-            <div>
-                <table id="table">
-                    <caption><b>Cash and Cash Equivalents</b></caption>
-                    <thead>
-                        <tr>
-                            <th>Period</th>
-                            <th>Value</th>
-                            <th>Blank</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="grid-cell" id="center-right">
-            <!-- Content for the center-right 55% -->
-            {% comment %} <p style="text-align:center; margin-top:0"><b>Correlation Coefficient</b></p>
-            <p style="text-align:center; margin-top:-2%;"><b>0.42</b></p> {% endcomment %}
-            <p style="margin-top:0; font-size:14px;"><b>Cash and Cash Equivalents: vs CA-ACP8 BY Quarter</b></p>
-            <div id="graph">
-                {% comment %} <img id="chartImage" src="data:image/png;base64,{{ chart_url }}" alt="Chart"> {% endcomment %}
-                <img id="chartImage" src="data:image/png;base64,{{ chart_url }}" alt="Chart" style="width: auto; height: auto;">
-            </div>
-        </div>
-
-    </div>
-
-    <div id="bottom">
-
-        <div id="bottom-left">
-            <!-- Content for the bottom-left 20% -->
-            <p><b>1. Select a Variable</b></p>
-            <div>
-                <select id="dropdown">
-                    <option value="1">Option 1</option>
-                    <option value="2">Option 2</option>
-                    <option value="3">Option 3</option>
-                    <option value="4">Option 4</option>
-                    <option value="5">Option 5</option>
-                </select>
-            </div>
-        </div>
-
-        <div id="bottom-center">
-            <!-- Content for the bottom-center 30% -->
-            <p>Bottom Center Content</p>
-            <div>
-                <h1>Equity-Insider</h1>
-                <h1>Equity-Insider</h1>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-            </div>
-        </div>
-
-        <div id="bottom-right">
-            <!-- Content for the bottom-right 50% -->
-            <p>Bottom Right Content</p>
-            <div>
-                <h1>Equity-Insider</h1>
-                <h1>Equity-Insider</h1>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-                <p>Top Content</p>
-            </div>
-        </div>
-
-    </div>
-
-</div>
 <script>
     // Function to update table and graph based on selected value
-    function updateData(selectedValue) {
+    function updateData(selectedValue, selectedCoefficient) {
         var stockId = '{{ stock_id }}';
         $.ajax({
-            url: `/stocksapp/get_data/${stockId}/${selectedValue}/`,
+            url: `/stocksapp/get_data/${stockId}/${selectedValue}/${selectedCoefficient}`,
             type: 'GET',
             dataType: 'json',
             success: function(data) {
-                // Update table
-                var tableHtml = '';
+                // Update tables
+                var tableHtml1 = '';
+                var tableHtml2 = '';
+                var tableHtml3 = '';
                 $.each(data.table_data, function(index, row) {
-                    tableHtml += `<tr><td>${row.Period}</td><td>${row.Value}</td><td>${row.Blank}</td></tr>`;
+                    tableHtml1 += `<tr><td>${row.Period}</td><td>${row.Value}</td><td>${row.Sum_of_StockValue}</td></tr>`;
                 });
-                $('#table tbody').html(tableHtml);
+                $('#table1 tbody').html(tableHtml1);
+
+                $.each(data.cor_list, function(index, row) {
+                    const formattedCoefficient = parseFloat(row.Correlation_Coefficient).toFixed(2);
+                    // Append the row HTML to the tableHtml2 variable, including the formatted coefficient
+                    tableHtml2 += `<tr><td>${row.T3_Index}</td><td>${formattedCoefficient}</td></tr>`;
+                });
+                $('#table2 tbody').html(tableHtml2);
+
+                $.each(data.cor_list, function(index, row) {
+                    tableHtml3 += `<tr><td><a href="#" class="data-link" data-index="${row.T3_Index}">${row.T3_Index}</a></td></tr>`;
+                });
+                $('#table3').html(tableHtml3);
 
                 // Update graph
-                // Replace this with your logic to update the graph using data.graph_data_y1 and data.graph_data_y2
-                // In this example, we update the 'src' attribute of the 'chartImage' element
-                $('#chartImage').attr('src', `data:image/png;base64,${data.chart_url}`);
+                document.getElementById('selectIndexTh').innerText = data.select_index;
+                document.getElementById('coefficient').innerText = data.corr_coeff;
+                document.getElementById('variable').innerHTML = '<strong>' + data.select_variable + '</strong>';
+                var chartnameElement = document.getElementById('chartname');
+                chartnameElement.innerHTML = '<strong>' + data.select_variable + '</strong>' + ' vs ' + '<strong>' + data.select_index + '</strong>' + ' BY Quarter';
+                chartnameElement.style.marginTop = '0';
+                chartnameElement.style.fontSize = '16px';
+
+                myChart.data.labels = JSON.parse(data.xaxis);
+                myChart.data.datasets[0].data = JSON.parse(data.yaxis1);
+                myChart.data.datasets[1].data = JSON.parse(data.yaxis2);
+
+                // Redraw the chart
+                myChart.update();
             },
             error: function(error) {
                 console.error('Error fetching data:', error);
@@ -258,14 +343,79 @@
     $(document).ready(function() {
         // Get the default selected value
         var defaultSelectedValue = $('#dropdown').val();
+        var defaultselectedCoefficient = '{{ select_index }}';
         // Update the table and graph for the default selected value
-        updateData(defaultSelectedValue);
+        updateData(defaultSelectedValue, defaultselectedCoefficient);
 
         // Bind the function to the change event of the dropdown
         $('#dropdown').on('change', function() {
             var selectedValue = $(this).val();
-            updateData(selectedValue);
+            var selectedCoefficient = null;
+            updateData(selectedValue, selectedCoefficient);
         });
+
+        // Attach click event handler to the parent element of .data-link elements
+        $('#table3').on('click', '.data-link', function(event) {
+            event.preventDefault(); // Prevent default anchor behavior
+            var selectedValue = $('#dropdown').val(); // Get the selected value from the dropdown
+            var selectedCoefficient = $(this).data('index'); // Set the coefficient value
+            updateData(selectedValue, selectedCoefficient);
+        });
+
+    });
+
+    var labels = JSON.parse('{{ xaxis|safe }}');
+    var chartData1 = JSON.parse('{{ yaxis1|safe }}');
+    var chartData2 = JSON.parse('{{ yaxis2|safe }}');
+    
+    // Create a Chart using Chart.js
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Stock',
+                    data: chartData1,
+                    borderColor: 'rgb(50, 12, 222)',
+                    fill: false,
+                    yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                },
+                {
+                    label: 'T3 Index',
+                    data: chartData2,
+                    borderColor: 'rgb(50, 12, 222)',
+                    fill: false,
+                    yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                },
+            ],
+        },
+        options: {
+            plugins: {
+                legend: {
+                    labels: {
+                        usePointStyle: true  // Set this property to true to use point style for legend items
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        maxRotation: 90, // Adjust the maximum rotation angle
+                        minRotation: 90, // Adjust the minimum rotation angle
+                        autoSkip: false, // Disable auto skipping of ticks
+                    },
+                },
+                yAxes: [
+                    {
+                        id: 'y-axis-0',
+                        type: 'linear',
+                        position: 'left',
+                    },
+                ],
+            },
+        },
     });
 
 </script>
