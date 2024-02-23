@@ -79,9 +79,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'stockdatabase_updated',
-        'USER': 'stockuser',
-        'PASSWORD': 'P@ssword1',
-        'HOST': '35.239.127.143',
+        'USER': 'mravula',
+        'PASSWORD': 'Dino@964',
+        'HOST': '35.222.122.68',
         'PORT': '3306',
     }
 }
