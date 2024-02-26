@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +10,9 @@
         body {
             background-color:#C8BFE7;
             text-align: center;
+            background-image: url("{% static 'images/background-edited.png'%}");
+            background-repeat: no-repeat;
+            background-size: cover;
         }
         .stock {
             display: inline-block;

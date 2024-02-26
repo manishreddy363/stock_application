@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,6 +12,9 @@
             height: 100%;
             margin: 0;
             background-color:#C8BFE7;
+            background-image: url("{% static 'images/background-edited.png'%}");
+            background-repeat: no-repeat;
+            background-size: cover;
         }
 
         #container {

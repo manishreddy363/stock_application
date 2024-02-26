@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,12 +8,14 @@
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            background-color:#C8BFE7;
             margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
+            background-image: url("{% static 'images/background-edited.png'%}");
+            background-repeat: no-repeat;
+            background-size: cover;
         }
 
         form {
