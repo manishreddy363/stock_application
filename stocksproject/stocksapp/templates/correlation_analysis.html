@@ -40,14 +40,14 @@
 
         #center-left {
             flex: 0.45;
-            height: 90%;
+            height: 92.5%;
             border: 1px solid black; /* Add black border */
             text-align: center;
         }
 
         #center-right {
             flex: 0.55;
-            height: 90%;
+            height: 92.5%;
             border: 1px solid black; /* Add black border */
         }
 
@@ -222,11 +222,9 @@
 
             <div class="grid-cell" id="center-right">
                 <!-- Content for the center-right 55% -->
-                {% comment %} <p style="text-align:center; margin-top:0"><b>Correlation Coefficient</b></p>
-                <p style="text-align:center; margin-top:-2%;"><b>0.42</b></p> {% endcomment %}
                 <p id='chartname' style="margin-top:0; font-size:16px;"><b>{{select_variable}} vs {{select_index}} By Quarter</b></p>
-                <div id="chartContent">
-                    <canvas id="myChart" width="400" height="200"></canvas>
+                <div id="chartContent" style="margin-top:-15px;">
+                    <canvas id="myChart" width="620" height="220"></canvas>
                 </div>
             </div>
 
@@ -371,7 +369,7 @@
     var labels = JSON.parse('{{ xaxis|safe }}');
     var chartData1 = JSON.parse('{{ yaxis1|safe }}');
     var chartData2 = JSON.parse('{{ yaxis2|safe }}');
-    
+
     // Create a Chart using Chart.js
     var ctx = document.getElementById('myChart').getContext('2d');
     var myChart = new Chart(ctx, {
@@ -382,24 +380,27 @@
                 {
                     label: 'Stock',
                     data: chartData1,
-                    borderColor: 'rgb(50, 12, 222)',
+                    borderColor: 'red',
                     fill: false,
-                    yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
                 },
                 {
                     label: 'T3 Index',
                     data: chartData2,
                     borderColor: 'rgb(50, 12, 222)',
                     fill: false,
-                    yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
                 },
             ],
         },
         options: {
+            layout: {
+                padding: {
+                    bottom: -10, // Adjust bottom padding to create space for x-axis labels
+                }
+            },
             plugins: {
                 legend: {
                     labels: {
-                        usePointStyle: true  // Set this property to true to use point style for legend items
+                        usePointStyle: true // Set this property to true to use point style for legend items
                     }
                 }
             },
@@ -407,21 +408,41 @@
                 x: {
                     ticks: {
                         maxRotation: 90, // Adjust the maximum rotation angle
-                        minRotation: 90, // Adjust the minimum rotation angle
                         autoSkip: false, // Disable auto skipping of ticks
+                        padding: 20,
                     },
                 },
-                yAxes: [
-                    {
-                        id: 'y-axis-0',
-                        type: 'linear',
-                        position: 'left',
+                y: {
+                    position: 'left',
+                    type: 'logarithmic',
+                    ticks: {
+                        callback: function (value, index, values) {
+                            // Display only specific values
+                            if (value === 10000) {
+                                return '$10K';
+                            } else if (value === 100000) {
+                                return '$100K';
+                            } else if (value === 1000000) {
+                                return '$1,000K';
+                            } else if (value === 10000000) {
+                                return '$10,000K';
+                            } else {
+                                return ''; // Return empty string for other values
+                            }
+                        }
                     },
-                ],
-            },
-        },
+                    afterBuildTicks: function (axis) {
+                        axis.ticks = [
+                            { value: 10000, label: '$10K' },
+                            { value: 100000, label: '$100K' },
+                            { value: 1000000, label: '$1,000K' },
+                            { value: 10000000, label: '$10,000K' }
+                        ]; // Customize ticks to the specified values with labels
+                    }
+                }
+            }
+        }
     });
-
 </script>
 </body>
 </html>

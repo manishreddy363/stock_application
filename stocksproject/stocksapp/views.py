@@ -71,7 +71,7 @@ def stock_analysis(request, stock):
         for item in stock_historical_data:
             item_historical_dict = {'filing_date':item['Stock_Historical_Data_V3_FilingDate'],
                                     'fiscal_quarter_end':item['Stock_Historical_Data_V3_FiscalQuarterEnd'],
-                                    'stock_price':random.randint(1,5),      # change this later
+                                    'stock_price':item['Stock_Historical_Data_V3_Previous_Price'],
                                     'next_day_stock_price':item['Stock_Historical_Data_V3_Price_Next_Day'],
                                     'impact':item['Stock_Historical_Data_V3_Impact']}
             stock_historical_list.append(item_historical_dict)

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Equity-Insider</title>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2"></script>
     <style>
         ::-webkit-scrollbar {
             width: 10px;
@@ -236,7 +236,7 @@
                 </table>
             </div>
             <div id="chartContent1" style="display:none;">
-                <canvas id="myChart1" width="400" height="200"></canvas>
+                <canvas id="myChart1" width="600" height="200"></canvas>
             </div>
         </div>
     </div>
@@ -267,7 +267,7 @@
             </table>
         </div>
         <div id="chartContent2" style="display:none;">
-            <canvas id="myChart2" width="400" height="200"></canvas>
+            <canvas id="myChart2" width="600" height="200"></canvas>
         </div>
     </div>
 
@@ -368,34 +368,38 @@
                     {
                         label: 'Stock Price (10 Days After Fiscal Quarter End)',
                         data: chartData1_h,
-                        backgroundColor: 'rgb(255, 99, 132)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'red', // Color inside the bars
                         type: 'bar',  // Set the type to 'line'
-                        yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                        yAxisID: 'y-axis-left',  // Associate with left y-axis
+                        fill: false,
                     },
                     {
                         label: 'Stock Price (Next Day)',
                         data: chartData2_h,
-                        backgroundColor: 'rgb(255, 99, 132)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'black', // Color inside the bars
                         type: 'bar',  // Set the type to 'bar'
-                        yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                        yAxisID: 'y-axis-left',  // Also associate with left y-axis
+                        fill: false,
                     },
                     {
                         label: 'Sum of Impact',
                         data: chartData3_h,
                         borderColor: 'rgb(50, 12, 222)',
-                        type: 'line',  // Set the type to 'bar'
+                        type: 'line',  // Set the type to 'line'
                         fill: false,
-                        yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                        yAxisID: 'y-axis-right', // Associate with right y-axis
                     },
                 ],
             },
             options: {
-                plugins: {
-                    legend: {
-                        labels: {
-                            usePointStyle: true  // Set this property to true to use point style for legend items
-                        }
-                    }
+                legend: {
+                    display: true,
+                    labels: {
+                        fontSize: 12, // Adjust the font size of the legend
+                        boxWidth: 10, // Adjust the width of the legend bars
+                    },
                 },
                 scales: {
                     x: {
@@ -405,11 +409,29 @@
                             autoSkip: false, // Disable auto skipping of ticks
                         },
                     },
-                    y: [
+                    yAxes: [
                         {
-                            id: 'y-axis-0',
-                            type: 'linear',
+                            id: 'y-axis-left',
+                            type: 'logarithmic',
                             position: 'left',
+                            ticks: {
+                                min: 1, // Set minimum value
+                                max: 100, // Set maximum value
+                                callback: function (value, index, values) {
+                                return [1, 10, 100].includes(value) ? value : ''; // Display only 1, 10, 100
+                                },
+                                autoSkip: false,
+                            },
+                        },
+                        {
+                            id: 'y-axis-right',
+                            position: 'right',
+                            ticks: {
+                                // Set suggested minimum and maximum values (adjust as needed)
+                                suggestedMin: -1,
+                                suggestedMax: 1,
+                                stepSize: 0.5,
+                            },
                         },
                     ],
                 },
@@ -450,7 +472,7 @@
                         borderColor: 'rgb(20, 132, 122)',
                         type: 'line',  
                         fill: false,
-                        yAxisID: 'y-axis-0',  // Assign both datasets to the same y-axis
+                        yAxisID: 'y-axis-1',  // Assign both datasets to the same y-axis
                     },
                     {
                         label: 'EI-Delta',
@@ -463,12 +485,12 @@
                 ],
             },
             options: {
-                plugins: {
-                    legend: {
-                        labels: {
-                            usePointStyle: true  // Set this property to true to use point style for legend items
-                        }
-                    }
+                legend: {
+                    display: true,
+                    labels: {
+                        fontSize: 12, // Adjust the font size of the legend
+                        boxWidth: 10, // Adjust the width of the legend bars
+                    },
                 },
                 scales: {
                     x: {
@@ -478,13 +500,33 @@
                             autoSkip: false, // Disable auto skipping of ticks
                         },
                     },
-                    y: [
+                    yAxes: [
                         {
                             id: 'y-axis-0',
                             type: 'linear',
                             position: 'left',
+                            ticks: {
+                                // Set suggested minimum and maximum values (adjust as needed)
+                                suggestedMin: -1,
+                                suggestedMin: 1,
+                                stepSize: 1,
+                                beginAtZero: true,
+                            },
+                        },
+                        {
+                            id: 'y-axis-1',
+                            position: 'right',
+                            type: 'linear',
+                            ticks: {
+                                // Set suggested minimum and maximum values (adjust as needed)
+                                suggestedMin: -1,
+                                suggestedMax: 1,
+                                stepSize: 1,
+                                beginAtZero: true,
+                            },
                         },
                     ],
+
                 },
             },
         });
