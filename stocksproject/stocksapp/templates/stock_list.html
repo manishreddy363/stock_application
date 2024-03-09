@@ -79,7 +79,7 @@
     <div class="stocks-container">
         {% if stocks %}
             {% for stock in stocks %}
-                <a href="{% url 'stock_analysis' stock=stock %}" class="stock">{{ stock }}</a>
+                <a style="color:black;" href="{% url 'stock_analysis' stock=stock %}" class="stock">{{ stock }}</a>
             {% endfor %}
         {% else %}
             <p><b>No such stock that starts with "{{ query }}"</b></p>
