@@ -66,28 +66,34 @@
         button:hover {
             background-color: #45a049;
         }
+        .parent-container {
+            margin-left: -23%;
     </style>
 </head>
 <body>
-    <form method="post" action="{% url 'login' %}">
-        {% csrf_token %}
-        <h2>User Login</h2>
+    <h1 style="margin-top: -36%; margin-left: 0%; color:white;">Equity-Insider</h1>
+    <h4 style="margin-top: -33%; margin-left: 0%; color:white;">by Tenoris<sup>3</sup></h4>
+    <div class="parent-container">
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            <h2>User Login</h2>
 
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
 
-        <label for="username">Username:</label>
-        <input type="text" name="username" required>
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" name="password" required>
-        <br>
-        <button type="submit">Login</button>
-    </form>
+            <label for="username">Username:</label>
+            <input type="text" name="username" required>
+            <br>
+            <label for="password">Password:</label>
+            <input type="password" name="password" required>
+            <br>
+            <button type="submit">Login</button>
+        </form>
+    </div>
 </body>
 </html>

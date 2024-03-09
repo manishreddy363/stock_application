@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'stocksapp',
     'import_export',
+    'stocksapp.templatetags',
 ]
 
 MIDDLEWARE = [

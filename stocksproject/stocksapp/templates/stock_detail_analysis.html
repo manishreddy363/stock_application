@@ -140,8 +140,8 @@
 <body>
     <!-- Title (Top 10%) -->
         <div class="grid-cell title">
-            <h1>Equity-Insider</h1>
-            <h4 style="margin-top: -2%; margin-left: 12%;">by Tenoris<sup>3</sup></h4>
+            <h1 style="color:white;">Equity-Insider</h1>
+            <h4 style="margin-top: -2%; margin-left: 12%; color:white;">by Tenoris<sup>3</sup></h4>
             <p style="margin-left:-91%; margin-top: -6%"><b>Stock Analysis</b></p>
             <div class="search-bar">
                 <form method="post" action="{% url 'stock_analysis' stock=stock_input %}">
@@ -227,8 +227,14 @@
                     <tbody>
                         {% for data in eps_data %}
                             <tr>
-                                {% for key,value in data.items %}
-                                    <td>{{ value }}</td>
+                                {% for key, value in data.items %}
+                                    {% if key == 'f_delta' %}
+                                        <td style="color: {% if value >= 0 %}green{% else %}red{% endif %};">{{ value }}</td>
+                                    {% elif key == 'ei_delta' %}
+                                        <td style="color: {% if value >= 0 %}green{% else %}red{% endif %};">{{ value }}</td>
+                                    {% else %}
+                                        <td>{{ value }}</td>
+                                    {% endif %}
                                 {% endfor %}
                             </tr>
                         {% endfor %}
@@ -257,11 +263,14 @@
                 </thead>
                 <tbody>
                     {% for data in fiscal_data %}
-                        <tr>
-                            {% for key,value in data.items %}
+                    <tr>
+                        {% for key, value in data.items %}
+                            {% if key == 'impact' %}
+                                <td style="color: {% if value >= 0 %}green{% else %}red{% endif %};">{{ value }}</td>
+                            {% else %}
                                 <td>{{ value }}</td>
-                            {% endfor %}
-                        </tr>
+                            {% endif %}
+                        {% endfor %}
                     {% endfor %}
                 </tbody>
             </table>

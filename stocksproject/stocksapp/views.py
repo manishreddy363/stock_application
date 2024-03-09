@@ -10,7 +10,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
-import random
+import datetime
 from matplotlib.ticker import FuncFormatter
 from django.http import JsonResponse
 import matplotlib
@@ -75,7 +75,7 @@ def stock_analysis(request, stock):
                                     'next_day_stock_price':item['Stock_Historical_Data_V3_Price_Next_Day'],
                                     'impact':item['Stock_Historical_Data_V3_Impact']}
             stock_historical_list.append(item_historical_dict)
-
+        stock_historical_list = sorted(stock_historical_list, key=custom_sort_date, reverse=True)
         stock_analysis_data['fiscal_data'] = stock_historical_list
         hist_xaxis  = []
         hist_yaxis1 = []
@@ -104,7 +104,7 @@ def stock_analysis(request, stock):
                                    'f_delta':item['Stock_Earnings_4_F_Delta_2'],
                                    'ei_delta':item['Stock_Earnings_4_EI_Delta_2']}
             stock_earnings_list.append(stock_earnings_dict)
-
+        stock_earnings_list = sorted(stock_earnings_list, key=custom_sort_date, reverse=True)
         stock_analysis_data['eps_data'] = stock_earnings_list
 
         earn_xaxis  = []
@@ -173,12 +173,12 @@ def stock_analysis(request, stock):
         legend_position1 = (0.81, 1)
         bars1 = 3
 
-        data2 = stock_historical_list
-        x_axis_2 = list(item_historical_dict.keys())[:2]
-        y_axis_2 = list(item_historical_dict.keys())[2:]
-        colors2 = ['blue', 'green', 'red']
-        legend_position2 = (0.58, 1)
-        bars2 = 2
+        # data2 = stock_historical_list
+        # x_axis_2 = list(item_historical_dict.keys())[:2]
+        # y_axis_2 = list(item_historical_dict.keys())[2:]
+        # colors2 = ['blue', 'green', 'red']
+        # legend_position2 = (0.58, 1)
+        # bars2 = 2
 
         chart_url_1 = stock_chart(x_axis_1, y_axis_1, data1, colors1, bars1, legend_position1)
         # chart_url_2 = stock_chart(x_axis_2, y_axis_2, data2, colors2, bars2, legend_position2)
@@ -340,7 +340,8 @@ def get_data(request, stock_id, variable= None, coefficient= None):
     else:
         select_var_id = var_list[0]['variable_id']
 
-    cor_list = get_correlation_values(stock_id,select_var_id)
+    corr_list = get_correlation_values(stock_id,select_var_id)
+    cor_list = sorted(corr_list, key=custom_sort)
     for var in var_list:
         if var['variable_id'] == int(select_var_id):
             select_variable = var['variable_name']
@@ -352,6 +353,16 @@ def get_data(request, stock_id, variable= None, coefficient= None):
         if cor['T3_Index'] == select_index:
             corr_coeff_decimal = cor['Correlation_Coefficient']
             corr_coeff = "{:.2f}".format(corr_coeff_decimal)
+    
+    # Key function to extract the 'Correlation_Coefficient' from each dictionary
+    key_function = lambda cor_list: cor_list['Correlation_Coefficient']
+
+    # Find the dictionary with the maximum 'Correlation_Coefficient' value
+    max_coefficient_dict = max(cor_list, key=key_function)
+
+    # Extract the maximum coefficient value
+    max_coefficient = max_coefficient_dict['Correlation_Coefficient']
+    max_coefficient_value = round(max_coefficient, 2)
     stock_name = Stock_ID.objects.get(stock_id=stock_id).stock_name
     table_data = get_eq_values(stock_name,select_index)
     
@@ -367,7 +378,7 @@ def get_data(request, stock_id, variable= None, coefficient= None):
 
 
     data = {'table_data': table_data, 'select_index': select_index, 'cor_list': cor_list, 'corr_coeff': corr_coeff, 'select_variable':select_variable,
-            'xaxis': chart_data_x, 'yaxis1': chart_data_y1, 'yaxis2': chart_data_y2}
+            'xaxis': chart_data_x, 'yaxis1': chart_data_y1, 'yaxis2': chart_data_y2, 'max_coeff':max_coefficient_value}
 
     return JsonResponse(data)
 
@@ -446,3 +457,18 @@ def page_3_api(request,stock_id,variable=None,index=None):
     return render(request, '3_page.html', {"data":{'variable_list': var_list,
                                            'correlation_list':cor_list,
                                            'eq_list':eq_list}})
+
+
+def custom_sort(d):
+    key_parts = d['T3_Index'].split('-')
+    prefix = key_parts[0]
+    number = int(key_parts[1][-1])  # Extract numeric part and convert to integer
+    if number == 0:
+        number = 10
+    return (prefix, number)
+
+
+# Custom sorting function to extract the date and convert it to a sortable format
+def custom_sort_date(d):
+    # Convert the date string to a sortable format
+    return datetime.datetime.strptime(d['filing_date'], '%d-%b-%y')

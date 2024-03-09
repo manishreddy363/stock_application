@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -177,8 +178,8 @@
         <div id="top">
             <!-- Content for the top 10% -->
             <p style="margin-top: 0%;"><b>Correlation Analysis</b></p>
-            <h1 style="text-align:center; margin-top: -3.0%;">Equity-Insider</h1>
-            <p style="margin-top: -2%; margin-left: 12%; text-align:center;"><b>by Tenoris<sup>3</sup></b></p>
+            <h1 style="text-align:center; margin-top: -3.0%; color:white;">Equity-Insider</h1>
+            <p style="margin-top: -2%; margin-left: 12%; text-align:center; color:white;"><b>by Tenoris<sup>3</sup></b></p>
             <div class="search-bar">
                 <form method="post" action="{% url 'correlation_analysis' stock_id=stock_id %}">
                     {% csrf_token %}
@@ -210,9 +211,9 @@
                         <tbody>
                             {% for data in correlation_data %}
                                 <tr>
-                                    <td>{{ data.Period }}</td>
-                                    <td>{{ data.Value }}</td>
-                                    <td>{{ data.Sum_of_StockValue }}</td>
+                                    <td>{{ data.Period|custom_date_format }}</td>
+                                    <td>{{ data.Value|format_currency }}</td>
+                                    <td>{{ data.Sum_of_StockValue|format_currency }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -290,6 +291,18 @@
         </div>
     </div>
 <script>
+    // Function to format date
+    function formatDate(dateString) {
+        var date = new Date(dateString);
+        var day = date.getDate();
+        var month = date.toLocaleString('default', { month: 'short' });
+        var year = date.getFullYear().toString().slice(-2);
+        return `${day}-${month}-${year}`;
+    }
+    // Function to format number as currency
+    function formatNumber(number) {
+        return parseFloat(number).toLocaleString('en-US', {maximumFractionDigits: 2});
+    }
     // Function to update table and graph based on selected value
     function updateData(selectedValue, selectedCoefficient) {
         var stockId = '{{ stock_id }}';
@@ -303,14 +316,32 @@
                 var tableHtml2 = '';
                 var tableHtml3 = '';
                 $.each(data.table_data, function(index, row) {
-                    tableHtml1 += `<tr><td>${row.Period}</td><td>${row.Value}</td><td>${row.Sum_of_StockValue}</td></tr>`;
+                    // Format date
+                    var formattedPeriod = formatDate(row.Period);
+                    // Format currency values
+                    var formattedValue = '$' + formatNumber(row.Value);
+                    var formattedSumOfStockValue = '$' + formatNumber(row.Sum_of_StockValue);
+                    
+                    // Append formatted values to table
+                    tableHtml1 += `<tr><td>${formattedPeriod}</td><td>${formattedValue}</td><td>${formattedSumOfStockValue}</td></tr>`;
                 });
                 $('#table1 tbody').html(tableHtml1);
 
+
                 $.each(data.cor_list, function(index, row) {
+                    // Format the coefficient
                     const formattedCoefficient = parseFloat(row.Correlation_Coefficient).toFixed(2);
-                    // Append the row HTML to the tableHtml2 variable, including the formatted coefficient
-                    tableHtml2 += `<tr><td>${row.T3_Index}</td><td>${formattedCoefficient}</td></tr>`;
+                    console.log(formattedCoefficient);
+                    console.log(data.max_coeff);
+
+                    // Append the row HTML to the tableHtml2 variable
+                    // Add a CSS class to the row if the coefficient matches the max value
+                    if (Math.abs(parseFloat(formattedCoefficient) - parseFloat(data.max_coeff)) < 0.001) {
+                        console.log("Highlighting row:", row);
+                        tableHtml2 += `<tr style="color: blue;"><td>${row.T3_Index}</td><td>${formattedCoefficient}</td></tr>`;
+                    } else {
+                        tableHtml2 += `<tr><td>${row.T3_Index}</td><td>${formattedCoefficient}</td></tr>`;
+                    }
                 });
                 $('#table2 tbody').html(tableHtml2);
 
