@@ -105,7 +105,7 @@
         .search-bar {
             display: flex;
             align-items: center; /* Align items vertically in the center */
-            margin-top: -1%;
+            margin-top: -2.4%;
             margin-bottom: -0.1%;
             margin-left: 0.5%;
         }
@@ -143,6 +143,7 @@
             <h1 style="color:white;">Equity-Insider</h1>
             <h4 style="margin-top: -2%; margin-left: 12%; color:white;">by Tenoris<sup>3</sup></h4>
             <p style="margin-left:-91%; margin-top: -6%"><b>Stock Analysis</b></p>
+            <a style="margin-left: 90%;" href="{% url 'stock_list' %}">Back Page</a>
             <div class="search-bar">
                 <form method="post" action="{% url 'stock_analysis' stock=stock_input %}">
                     {% csrf_token %}

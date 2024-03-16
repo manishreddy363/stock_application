@@ -136,8 +136,8 @@
 
         .boxed {
             border: 2px solid #333;
-            margin-top: -2%;
-            margin-left: 70%;
+            margin-top: 0.5%;
+            margin-left: 80%;
             width: 240px; /* Set the maximum width for the box */
             height: 23px;
             background-color: snow;
@@ -163,7 +163,7 @@
         .search-bar {
             display: flex;
             align-items: center; /* Align items vertically in the center */
-            margin-top: -2%;
+            margin-top: -3.5%;
             margin-bottom: 0;
             margin-left: 0;
         }
@@ -174,7 +174,6 @@
 <body>
 
     <div id="container">
-
         <div id="top">
             <!-- Content for the top 10% -->
             <p style="margin-top: 0%;"><b>Correlation Analysis</b></p>
@@ -188,9 +187,10 @@
                 </form>
                 <span style="color: red;">{% if error_message %}{{ error_message }}{% endif %}</span>
             </div>
+            <a style="margin-top:-10%; margin-left:90%;" href="{% url 'stock_analysis' stock=stock_name %}">Back Page</a>
             <div class="boxed">
-                <p style="margin-top: 1%;"><b>Correlation Coefficient</b></p>
-                <p id="coefficient" style="margin-top: -14%; margin-left:88%; color:blue;"><b>{{ corr_coeff }}</b></p>
+                <p style="margin-top: 1.5%;"><b>Correlation Coefficient</b></p>
+                <p id="coefficient" style="margin-top: -14%; margin-left:85%; color:blue;"><b>{{ corr_coeff }}</b></p>
             </div>
         </div>
 
@@ -278,7 +278,7 @@
                     </div>
                 </div>
             </div>
-
+            <button style="width: 30px; height: 30px; font-size: 16px; margin-top: 8.5%;" onclick="sortTable()"><b>>></b></button>
             <div id="bottom-right">
                 <!-- Content for the bottom-right 50% -->
                 </div>
@@ -394,8 +394,31 @@
             var selectedCoefficient = $(this).data('index'); // Set the coefficient value
             updateData(selectedValue, selectedCoefficient);
         });
-
     });
+
+    function sortTable() {
+        var table = document.getElementById("table2");
+        var rows = Array.from(table.getElementsByTagName("tr"));
+        var dataRows = rows.slice(1); // Exclude the header row
+
+        dataRows.sort(function(a, b) {
+            var aValue = parseFloat(a.cells[1].innerText);
+            var bValue = parseFloat(b.cells[1].innerText);
+            return aValue - bValue;
+        });
+
+        if (table.getAttribute("data-sorted-order") == "asc") {
+            dataRows.reverse();
+            table.setAttribute("data-sorted-order", "desc");
+        } else {
+            table.setAttribute("data-sorted-order", "asc");
+        }
+
+        // Re-append sorted rows to table
+        dataRows.forEach(function(row) {
+            table.tBodies[0].appendChild(row);
+        });
+    }
 
     var labels = JSON.parse('{{ xaxis|safe }}');
     var chartData1 = JSON.parse('{{ yaxis1|safe }}');
